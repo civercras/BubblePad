@@ -1,0 +1,51 @@
+name: Build Windows release
+
+# Cada vez que se sube una etiqueta vX.Y.Z, GitHub compila Bubblepad.exe en Windows
+# y lo publica en Releases como Bubblepad-windows.zip
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Build Bubblepad.exe
+        run: >
+          pyinstaller --noconfirm --clean --windowed --name Bubblepad
+          --icon assets\bubblepad.ico
+          --add-data "ui;ui" --add-data "assets;assets" --add-data "demo_sounds;demo_sounds"
+          bubblepad.py
+
+      - name: Zip
+        shell: pwsh
+        run: Compress-Archive -Path dist\Bubblepad -DestinationPath Bubblepad-windows.zip -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Bubblepad-windows
+          path: Bubblepad-windows.zip
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Bubblepad-windows.zip
+          name: Bubblepad ${{ github.ref_name }} (early access)
+          body_path: docs/RELEASE_NOTES.md
+          prerelease: true
