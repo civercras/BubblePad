@@ -1,0 +1,93 @@
+<p align="center"><img src="assets/bubblepad.png" width="96" alt="Bubblepad icon"></p>
+
+<h1 align="center">Bubblepad</h1>
+
+<p align="center"><b>Free soundboard for Windows that plays sounds through your microphone.</b><br>
+Mixes your real mic and your sound effects into <b>one virtual microphone</b>, so people hear both in <b>Discord, games, Zoom, Teams</b> or any voice chat.</p>
+
+<p align="center"><a href="#english">English</a> · <a href="#español">Español</a></p>
+
+<p align="center"><img src="docs/day.png" width="760" alt="Bubblepad soundboard: day theme"></p>
+
+---
+
+## English
+
+### What it does
+Discord and games only listen to **one** input device. Bubblepad sits in the middle:
+
+```
+your real mic  ─┐
+                ├─►  CABLE Input  ──►  Discord / game hears your voice + your sounds
+sound effects ──┤
+                └─►  your headphones (sounds only, so you don't hear your own voice echo)
+```
+
+If you have ever searched for *"how to play sounds through my mic"*, *"soundboard for Discord that I can also hear"* or *"mix microphone and soundboard into one input"*, this is that.
+
+### Features
+- 🎙 **Mic + soundboard mixer** into a single virtual microphone (uses the free VB-CABLE driver)
+- 🎧 **You hear the sounds too**, but not your own voice
+- ⌨ **Global hotkeys**: work while the window is minimized or hidden in the tray (Ctrl/Alt/Shift combos, F-keys, numpad)
+- ✂ **Trim editor** with waveform and **one-click silence removal** (non-destructive, your files are never modified)
+- 🔊 Separate volumes for your voice, sounds in the call and sounds for you
+- 🌙 **Day / night themes** with an animated sunset, Casio-style LCD with live meters
+- 🫧 Tray icon, mute button, stop-all, search, sort by hotkey, resizable window (80–120 %)
+- 🌍 English and Spanish
+- 🛡 Auto-recovers if your headset sleeps or reconnects
+
+<p align="center"><img src="docs/trim.png" width="49%" alt="Trim editor with waveform"> <img src="docs/night.png" width="49%" alt="Night theme"></p>
+
+### Install
+1. Install **[VB-CABLE](https://vb-audio.com/Cable/)** (free) and restart your PC.
+2. Download **Bubblepad-windows.zip** from [Releases](../../releases), unzip it anywhere and run **Bubblepad.exe**.
+3. In **Discord** (or your game): *Settings → Voice → Input device* → **CABLE Output (VB-Audio Virtual Cable)**.
+4. In Discord, turn **off Noise Suppression and Echo Cancellation**, otherwise it treats your sounds as background noise and makes them sound distant.
+
+Add sounds with **＋** (mp3, wav, ogg, flac). Right-click a bubble to set a hotkey, trim or delete it.
+
+### Run from source
+Requires Python 3.11+ on Windows. Double-click **`Iniciar Bubblepad.bat`**: it creates a virtual environment, installs the dependencies and starts the app. To build the `.exe`, run **`Compilar exe.bat`** (PyInstaller) and grab `dist/Bubblepad-windows.zip`.
+
+Built with Python, PySide6 (Qt WebEngine for the UI), sounddevice/PortAudio (WASAPI), miniaudio and numpy.
+
+### FAQ
+- **People hear my sounds but I don't** → check "I listen on" in ⚙ and the *Sounds for me* slider.
+- **Sounds play but nobody hears them** → Discord's input must be *CABLE Output*, and noise suppression off.
+- **A hotkey doesn't work** → another app already uses that combination; Bubblepad will tell you.
+
+---
+
+## Español
+
+### Qué hace
+Discord y los juegos solo escuchan **un** micrófono. Bubblepad se pone en medio: mezcla **tu micro real y tus sonidos** en un **micro virtual** (VB-CABLE), y a ti te deja oír los sonidos en tus cascos sin escuchar tu propia voz.
+
+Si alguna vez has buscado *"cómo poner sonidos por el micro en Discord"*, *"soundboard que suene por el micrófono"* o *"mezclar micro y soundboard en una sola entrada"*, es esto.
+
+### Funciones
+- 🎙 Mezclador de micro + soundboard en un solo micro virtual
+- 🎧 Tú también oyes los sonidos (pero no tu voz)
+- ⌨ Atajos de teclado globales, también con la ventana minimizada o escondida
+- ✂ Editor de recorte con forma de onda y botón para **quitar silencios** (sin tocar el archivo original)
+- 🔊 Volúmenes separados: tu voz, sonidos en llamada y sonidos para ti
+- 🌙 Tema de día y de noche con atardecer animado, pantalla LCD estilo Casio
+- 🫧 Icono en la bandeja, silenciar micro, parar todo, búsqueda, orden por atajos, ventana redimensionable
+- 🌍 Español e inglés
+
+### Instalación
+1. Instala **[VB-CABLE](https://vb-audio.com/Cable/)** (gratis) y reinicia.
+2. Descarga **Bubblepad-windows.zip** de [Releases](../../releases), descomprímelo y abre **Bubblepad.exe**.
+3. En **Discord** (o tu juego): *Ajustes → Voz y vídeo → Micrófono* → **CABLE Output (VB-Audio Virtual Cable)**.
+4. Desactiva en Discord la **supresión de ruido** y la **cancelación de eco**, o tratará tus sonidos como ruido.
+
+### Desde el código
+Con Python 3.11+ en Windows: doble clic en **`Iniciar Bubblepad.bat`**. Para crear el `.exe`: **`Compilar exe.bat`**.
+
+---
+
+**Design & product direction:** [civercras](https://civercras.github.io) · **Development:** AI-assisted (Claude)
+
+Licence: MIT. Segment display fonts: [DSEG](https://github.com/keshikan/DSEG) (SIL Open Font License). VB-CABLE is © VB-Audio and is installed separately.
+
+<sub>Keywords: soundboard, discord soundboard, play sounds through mic, mic mixer, virtual microphone, virtual audio cable, VB-CABLE, sound effects, voice chat, gaming, Windows, free, open source, Soundpad alternative, Voicemod soundboard alternative.</sub>

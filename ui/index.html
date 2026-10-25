@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Bubblepad</title>
+<script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+<style>
+/*
+  GEOMETRÍA (px de ventana, 1120×720). Todos los radios son concéntricos:
+    carcasa R64 ─(hueco 24)→ paneles R40 ─(hueco 12)→ LCD / bandejas R28 ─(hueco 8)→ botones R20
+    oreja r112 ─(hueco 16)→ pozo r96 ─(hueco 12)→ anillo r84 ─(hueco 24)→ tapa r60
+  Las sombras con "spread" mantienen la concentricidad solas.
+*/
+/* ═════════ TEMA DÍA / NOCHE ═════════ */
+@property --lcd-bg1{syntax:"<color>";inherits:true;initial-value:#cdd6ba}
+@property --lcd-bg2{syntax:"<color>";inherits:true;initial-value:#b2bc9b}
+@property --seg{syntax:"<color>";inherits:true;initial-value:#1f2619}
+@property --seg-ghost{syntax:"<color>";inherits:true;initial-value:rgba(31,38,25,.075)}
+@property --seg-dim{syntax:"<color>";inherits:true;initial-value:rgba(31,38,25,.22)}
+@property --seg-glow{syntax:"<color>";inherits:true;initial-value:rgba(255,150,40,0)}
+@property --lit1{syntax:"<color>";inherits:true;initial-value:#b9f2e2}
+@property --lit2{syntax:"<color>";inherits:true;initial-value:#7fd6c1}
+@property --btn-a{syntax:"<color>";inherits:true;initial-value:#fbfdff}
+@property --btn-b{syntax:"<color>";inherits:true;initial-value:#e3edf6}
+@property --btn-c{syntax:"<color>";inherits:true;initial-value:#cad9e7}
+@property --btn-ink{syntax:"<color>";inherits:true;initial-value:#16508e}
+@property --btn-edge{syntax:"<color>";inherits:true;initial-value:#8fa6bd}
+@property --btn-hl{syntax:"<color>";inherits:true;initial-value:rgba(255,255,255,.95)}
+@property --tray{syntax:"<color>";inherits:true;initial-value:rgba(0,30,80,.22)}
+@property --glass-a{syntax:"<color>";inherits:true;initial-value:rgba(255,255,255,.55)}
+@property --glass-b{syntax:"<color>";inherits:true;initial-value:rgba(255,255,255,.25)}
+@property --field{syntax:"<color>";inherits:true;initial-value:rgba(255,255,255,.88)}
+@property --field-ink{syntax:"<color>";inherits:true;initial-value:#0b3558}
+@property --pill-bg{syntax:"<color>";inherits:true;initial-value:rgba(255,255,255,.72)}
+@property --pill-ink{syntax:"<color>";inherits:true;initial-value:#0b3558}
+@property --chip-a{syntax:"<color>";inherits:true;initial-value:#ffffff}
+@property --chip-b{syntax:"<color>";inherits:true;initial-value:#e2eef8}
+@property --chip-ink{syntax:"<color>";inherits:true;initial-value:#0b3558}
+@property --track-a{syntax:"<color>";inherits:true;initial-value:#0a2f61}
+@property --track-b{syntax:"<color>";inherits:true;initial-value:#164f93}
+@property --print-sh{syntax:"<color>";inherits:true;initial-value:rgba(0,25,70,.55)}
+@property --orb-b{syntax:"<number>";inherits:true;initial-value:1}
+:root.night{--lcd-bg1:#1c1610;--lcd-bg2:#0b0905;--seg:#ff9a2e;--seg-ghost:rgba(255,154,46,.08);--seg-dim:rgba(255,154,46,.26);--seg-glow:rgba(255,140,30,.75);--lit1:#3d2709;--lit2:#1d1104;--btn-a:#4c5460;--btn-b:#363d48;--btn-c:#262b33;--btn-ink:#ffad4f;--btn-edge:#0f1217;--btn-hl:rgba(255,255,255,.16);--tray:rgba(0,0,0,.4);--glass-a:rgba(26,36,60,.62);--glass-b:rgba(10,16,32,.42);--field:rgba(14,20,36,.88);--field-ink:#ffcf9a;--pill-bg:rgba(12,20,38,.74);--pill-ink:#ffd9a8;--chip-a:#3a414c;--chip-b:#262b33;--chip-ink:#ffbf73;--track-a:#05080f;--track-b:#161c27;--print-sh:rgba(0,0,0,.65);--orb-b:.8}
+:root{transition:--lcd-bg1 1.08s ease-in-out 0.9s,--lcd-bg2 1.08s ease-in-out 0.9s,--seg 1.08s ease-in-out 0.9s,--seg-ghost 1.08s ease-in-out 0.9s,--seg-dim 1.08s ease-in-out 0.9s,--seg-glow 1.08s ease-in-out 0.9s,--lit1 1.08s ease-in-out 0.9s,--lit2 1.08s ease-in-out 0.9s,--btn-a 1.08s ease-in-out 0.42s,--btn-b 1.08s ease-in-out 0.42s,--btn-c 1.08s ease-in-out 0.42s,--btn-ink 0.21s linear 1.02s,--btn-edge 1.08s ease-in-out 0.42s,--btn-hl 1.08s ease-in-out 0.42s,--tray 1.08s ease-in-out 0.42s,--glass-a 1.08s ease-in-out 0.42s,--glass-b 1.08s ease-in-out 0.42s,--field 1.08s ease-in-out 0.42s,--field-ink 0.21s linear 1.02s,--pill-bg 1.08s ease-in-out 0.42s,--pill-ink 0.21s linear 1.02s,--chip-a 1.08s ease-in-out 0.42s,--chip-b 1.08s ease-in-out 0.42s,--chip-ink 0.21s linear 1.02s,--track-a 1.08s ease-in-out 0.42s,--track-b 1.08s ease-in-out 0.42s,--print-sh 1.08s ease-in-out 0.42s,--orb-b 1.08s ease-in-out 0.42s}
+:root.night{transition:--lcd-bg1 1.08s ease-in-out 0.9s,--lcd-bg2 1.08s ease-in-out 0.9s,--seg 1.08s ease-in-out 0.9s,--seg-ghost 1.08s ease-in-out 0.9s,--seg-dim 1.08s ease-in-out 0.9s,--seg-glow 1.08s ease-in-out 0.9s,--lit1 1.08s ease-in-out 0.9s,--lit2 1.08s ease-in-out 0.9s,--btn-a 1.08s ease-in-out 0.42s,--btn-b 1.08s ease-in-out 0.42s,--btn-c 1.08s ease-in-out 0.42s,--btn-ink 0.21s linear 1.02s,--btn-edge 1.08s ease-in-out 0.42s,--btn-hl 1.08s ease-in-out 0.42s,--tray 1.08s ease-in-out 0.42s,--glass-a 1.08s ease-in-out 0.42s,--glass-b 1.08s ease-in-out 0.42s,--field 1.08s ease-in-out 0.42s,--field-ink 0.21s linear 1.02s,--pill-bg 1.08s ease-in-out 0.42s,--pill-ink 0.21s linear 1.02s,--chip-a 1.08s ease-in-out 0.42s,--chip-b 1.08s ease-in-out 0.42s,--chip-ink 0.21s linear 1.02s,--track-a 1.08s ease-in-out 0.42s,--track-b 1.08s ease-in-out 0.42s,--print-sh 1.08s ease-in-out 0.42s,--orb-b 1.08s ease-in-out 0.42s}
+:root:not(.night){transition:--lcd-bg1 0.9s ease-in-out 0.3s,--lcd-bg2 0.9s ease-in-out 0.3s,--seg 0.9s ease-in-out 0.3s,--seg-ghost 0.9s ease-in-out 0.3s,--seg-dim 0.9s ease-in-out 0.3s,--seg-glow 0.9s ease-in-out 0.3s,--lit1 0.9s ease-in-out 0.3s,--lit2 0.9s ease-in-out 0.3s,--btn-a 0.9s ease-in-out 0.12s,--btn-b 0.9s ease-in-out 0.12s,--btn-c 0.9s ease-in-out 0.12s,--btn-ink 0.21s linear 0.54s,--btn-edge 0.9s ease-in-out 0.12s,--btn-hl 0.9s ease-in-out 0.12s,--tray 0.9s ease-in-out 0.12s,--glass-a 0.9s ease-in-out 0.12s,--glass-b 0.9s ease-in-out 0.12s,--field 0.9s ease-in-out 0.12s,--field-ink 0.21s linear 0.54s,--pill-bg 0.9s ease-in-out 0.12s,--pill-ink 0.21s linear 0.54s,--chip-a 0.9s ease-in-out 0.12s,--chip-b 0.9s ease-in-out 0.12s,--chip-ink 0.21s linear 0.54s,--track-a 0.9s ease-in-out 0.12s,--track-b 0.9s ease-in-out 0.12s,--print-sh 0.9s ease-in-out 0.12s,--orb-b 0.9s ease-in-out 0.12s}
+:root.noanim,:root.noanim *{transition:none!important;animation-duration:0s!important}
+@font-face{font-family:"Seg7";src:url(fonts/DSEG7Classic-BoldItalic.woff2) format("woff2")}
+@font-face{font-family:"Seg14";src:url(fonts/DSEG14Classic-BoldItalic.woff2) format("woff2")}
+:root{
+  --ink:#0b3558; --ink-soft:#3c6a8c;
+  --print:#e9f4ff;
+  --casio-orange:#f08a24; --casio-blue:#6fb6ff;
+  --refl:radial-gradient(150% 62% at 50% -14%,rgba(255,255,255,.30) 0 60%,rgba(255,255,255,0) 60.6%),
+         linear-gradient(112deg,rgba(255,255,255,0) 63%,rgba(255,255,255,.11) 63.4%,rgba(255,255,255,.11) 69%,rgba(255,255,255,0) 69.4%);
+  --refl-soft:radial-gradient(150% 46% at 50% -10%,rgba(255,255,255,.16) 0 60%,rgba(255,255,255,0) 60.6%),
+         linear-gradient(112deg,rgba(255,255,255,0) 66%,rgba(255,255,255,.07) 66.3%,rgba(255,255,255,.07) 71%,rgba(255,255,255,0) 71.3%);
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent}
+body{font:13px/1.3 "Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;color:var(--ink);user-select:none}
+body.preview{background:linear-gradient(180deg,#5d95c9,#b9d6ee 60%,#e9f2f9)}
+button{font-family:inherit}
+.abs{position:absolute}
+
+#chassis,.chassisN{position:absolute;left:0;top:0;width:1120px;height:720px;will-change:transform}
+.chassisN{opacity:0;will-change:opacity;transition:opacity 0.9s ease-in-out 0.12s}
+.night .chassisN{opacity:1;transition:opacity 1.08s ease-in-out 0.42s}
+.print{position:absolute;font:700 10px/1 "Segoe UI",sans-serif;letter-spacing:2px;color:var(--print);
+  text-shadow:0 1px 0 var(--print-sh);pointer-events:none;text-transform:uppercase}
+
+/* ═════════ BISEL + LCD CASIO ═════════ */
+.bezel{left:114px;top:52px;width:320px;height:150px;border-radius:40px;
+  background:linear-gradient(180deg,#3a3f46 0%,#1d2126 40%,#15181c 100%);
+  box-shadow:0 0 0 3px rgba(0,25,70,.35),0 3px 0 3px rgba(255,255,255,.28),inset 0 2px 1px rgba(255,255,255,.18),inset 0 -2px 4px rgba(0,0,0,.6)}
+.bezel::after{content:"";position:absolute;inset:0;border-radius:40px;pointer-events:none;
+  background:linear-gradient(170deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 35%)}
+.lcd{position:absolute;left:12px;top:12px;right:12px;height:100px;border-radius:28px;overflow:hidden;
+  background:radial-gradient(120% 140% at 30% 0%,var(--lcd-bg1) 0%,var(--lcd-bg2) 100%);
+  box-shadow:inset 0 3px 7px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.5);color:var(--seg);text-shadow:0 0 7px var(--seg-glow)}
+.lcd.lit{background:radial-gradient(120% 140% at 30% 0%,var(--lit1) 0%,var(--lit2) 100%)}
+.lcd::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:var(--refl);transition:opacity .9s ease-in-out .3s;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}
+.seg7{font-family:"Seg7";font-weight:normal}
+.seg14{font-family:"Seg14";font-weight:normal}
+.ghosted{position:relative;display:inline-block;white-space:pre}
+.ghosted::before{content:attr(data-ghost);position:absolute;left:0;top:0;color:var(--seg-ghost)}
+.lcd .top{position:absolute;right:20px;top:12px;display:flex;flex-direction:column;align-items:flex-end;gap:5px;font-size:11px}
+.lcd .tag{font:800 8px/1 "Segoe UI";letter-spacing:1px;padding:2px 4px;border-radius:3px;background:var(--seg);color:var(--lcd-bg1);margin-right:4px;vertical-align:2px}
+.lcd.lit .tag{color:var(--lit1)}
+.lcd .tag,.ed-lcd .tag{text-shadow:none;box-shadow:0 0 6px var(--seg-glow)}
+.lcd .big{position:absolute;left:20px;top:13px;font-size:30px;line-height:1}
+.lcd .sec{position:absolute;left:140px;top:26px;font-size:16px;line-height:1}
+.lcd .name{position:absolute;left:20px;right:20px;top:52px;height:16px;overflow:hidden;font-size:13px;white-space:nowrap}
+.lcd .name span{display:inline-block}
+.lcd .name span.scroll{animation:marquee linear infinite}
+@keyframes marquee{0%,12%{transform:translateX(0)}88%,100%{transform:translateX(var(--shift))}}
+.vu{position:absolute;left:20px;right:20px;top:74px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.vu div{display:flex;align-items:center;gap:4px}
+.vu b{font:800 8px/1 "Segoe UI";letter-spacing:.5px}
+.vu .bars{flex:1;display:grid;grid-template-columns:repeat(10,1fr);gap:2px;height:12px;align-items:end}
+.vu .bars i{display:block;background:var(--seg-ghost);transform:skewX(-8deg);height:calc(30% + var(--h) * 7%)}
+.vu .bars i.on{background:var(--seg);box-shadow:0 0 4px var(--seg-glow)}
+.bezel .printrow{position:absolute;left:28px;right:28px;bottom:12px;white-space:nowrap;display:flex;align-items:baseline;justify-content:space-between}
+.bezel .brand{font:800 12.5px/1 "Segoe UI";letter-spacing:3.5px;color:#f2f2f2}
+.bezel .model{font:700 8.5px/1 "Segoe UI";letter-spacing:1.5px;color:var(--casio-orange)}
+.bezel .model i{font-style:normal;color:var(--casio-blue)}
+
+/* ═════════ BANDEJAS Y BOTONES DE PLÁSTICO ═════════ */
+.tray{border-radius:28px;background:linear-gradient(180deg,var(--tray),rgba(0,0,0,.06));
+  box-shadow:inset 0 2px 5px rgba(0,20,60,.45),inset 0 -1px 0 rgba(255,255,255,.25),0 1px 0 rgba(255,255,255,.35)}
+.icons{z-index:5;left:114px;top:222px;width:320px;height:56px;display:flex;gap:8px;padding:8px}
+.pbtn{flex:1;height:40px;border-radius:20px;border:none;cursor:pointer;position:relative;font-size:17px;color:var(--btn-ink);
+  background:linear-gradient(180deg,var(--btn-a) 0%,var(--btn-b) 55%,var(--btn-c) 100%);
+  box-shadow:0 2px 0 var(--btn-edge),0 4px 6px rgba(0,25,70,.35),inset 0 1px 0 var(--btn-hl),inset 0 -2px 3px rgba(0,40,90,.12);
+  transition:transform .08s,box-shadow .08s}
+.pbtn::before{content:"";position:absolute;left:14%;right:14%;top:3px;height:38%;border-radius:20px;
+  background:linear-gradient(180deg,var(--btn-hl),rgba(255,255,255,0))}
+.pbtn:hover{filter:brightness(1.04)}
+.pbtn:active,.pbtn.on{transform:translateY(2px);box-shadow:0 0 0 var(--btn-edge),0 1px 2px rgba(0,25,70,.35),inset 0 2px 4px rgba(0,40,90,.25)}
+.pbtn.on{background:linear-gradient(180deg,#e9ffd9,#b8eb94 60%,#97d96b);color:#245d0c}
+.pbtn[data-tip]:hover::after{content:attr(data-tip);position:absolute;left:50%;top:48px;transform:translateX(-50%);white-space:nowrap;z-index:9;
+  padding:5px 10px;border-radius:9px;background:rgba(8,30,60,.9);color:#fff;font:600 12px "Segoe UI";pointer-events:none}
+
+.sliders{left:114px;top:294px;width:320px;height:154px;padding:16px 22px}
+.sl + .sl{margin-top:14px}
+.sl label{display:flex;justify-content:space-between;margin-bottom:7px}
+.sl label span{font:700 10px/1 "Segoe UI";letter-spacing:1.8px;color:var(--print);text-shadow:0 1px 0 var(--print-sh);text-transform:uppercase}
+input[type=range]{width:100%;-webkit-appearance:none;height:8px;border-radius:4px;margin:0;
+  background:linear-gradient(180deg,var(--track-a),var(--track-b));box-shadow:inset 0 2px 3px rgba(0,0,20,.7),0 1px 0 rgba(255,255,255,.35)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:20px;border-radius:10px;cursor:pointer;
+  background:linear-gradient(180deg,var(--btn-a) 0%,var(--btn-b) 50%,var(--btn-c) 100%);
+  box-shadow:0 2px 0 var(--btn-edge),0 3px 6px rgba(0,20,60,.45),inset 0 1px 0 var(--btn-hl);border:none}
+
+.well{border-radius:50%;background:radial-gradient(circle at 50% 35%,var(--tray),rgba(0,0,0,.08));
+  box-shadow:inset 0 3px 6px rgba(0,20,60,.55),inset 0 -1px 0 rgba(255,255,255,.3),0 1px 0 rgba(255,255,255,.35)}
+.stopwell{left:308px;top:500px;width:104px;height:104px}
+.stop{position:absolute;left:12px;top:12px;width:80px;height:80px;border-radius:50%;border:none;cursor:pointer;
+  background:radial-gradient(circle at 50% 28%,var(--btn-a) 0%,var(--btn-b) 35%,var(--btn-c) 100%);
+  box-shadow:0 3px 0 var(--btn-edge),0 6px 10px rgba(0,25,70,.4),inset 0 -3px 5px rgba(0,40,90,.15);transition:transform .08s,box-shadow .08s}
+.stop::after{content:"";position:absolute;left:29px;top:29px;width:22px;height:22px;border-radius:4px;
+  background:linear-gradient(180deg,#ff6b5f,#d1271f);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 6px rgba(255,80,60,.5)}
+.stop:active{transform:translateY(3px);box-shadow:0 0 0 var(--btn-edge),0 2px 3px rgba(0,25,70,.4),inset 0 2px 5px rgba(0,40,90,.25)}
+
+/* anillo del micro, concéntrico con la oreja (centro 160,578) */
+.ring{left:76px;top:494px;width:168px;height:168px;border-radius:50%;border:none;cursor:pointer;padding:0;
+  background:conic-gradient(from 210deg,#d6ffb8,#58d225 18%,#2f9a12 45%,#5fd62c 70%,#d6ffb8);
+  box-shadow:0 0 0 1px rgba(0,40,0,.35),0 0 22px rgba(110,230,60,.65),inset 0 2px 3px rgba(255,255,255,.7),inset 0 -3px 6px rgba(0,60,0,.5);
+  transition:transform .1s}
+.ring.muted{background:conic-gradient(from 210deg,#ffd1c9,#f04b40 18%,#a8231b 45%,#f2584c 70%,#ffd1c9);
+  box-shadow:0 0 0 1px rgba(60,0,0,.35),0 0 22px rgba(255,80,60,.6),inset 0 2px 3px rgba(255,255,255,.7),inset 0 -3px 6px rgba(70,0,0,.5)}
+.ring::before{content:"";position:absolute;left:12%;right:12%;top:5%;height:30%;border-radius:50%;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,0))}
+.ring .cap{position:absolute;left:24px;top:24px;width:120px;height:120px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 28%,var(--btn-a) 0%,var(--btn-b) 38%,var(--btn-c) 100%);
+  box-shadow:0 0 0 2px rgba(0,30,10,.25),0 3px 6px rgba(0,25,60,.45),inset 0 -3px 6px rgba(0,40,90,.15);font-size:34px}
+.ring .cap::after{content:"";position:absolute;left:22%;right:22%;top:9%;height:26%;border-radius:50%;background:linear-gradient(180deg,var(--btn-hl),rgba(255,255,255,0))}
+.ring:active{transform:scale(.97)}
+
+/* ═════════ PANTALLA: paisaje tras metacrilato ═════════ */
+.screen{left:458px;top:52px;width:610px;height:586px;border-radius:40px;overflow:hidden;
+  box-shadow:0 0 0 3px rgba(0,25,70,.35),0 3px 0 3px rgba(255,255,255,.28);
+  background:#0a2a55}
+.L{position:absolute;inset:0;pointer-events:none;will-change:opacity}
+.sky-day{background:linear-gradient(180deg,#0a6fe0 0%,#1e95f6 22%,#4fbcff 42%,#a8e3ff 57%);transition:opacity 0.96s ease-in-out 0.3s}
+.sky-dusk{opacity:0;background:
+    radial-gradient(55% 26% at 62% 57%,rgba(255,196,96,.95) 0%,rgba(255,130,80,0) 70%),
+    linear-gradient(180deg,#24357f 0%,#6a4aa0 28%,#e2687a 44%,#ffb066 57%)}
+.sky-night{opacity:0;transition:opacity 1.08s ease-in-out 0.54s;background:
+    radial-gradient(70% 16% at 50% 57%,rgba(110,140,220,.35) 0%,rgba(0,0,0,0) 70%),
+    linear-gradient(180deg,#02050f 0%,#081233 38%,#1b2b5e 57%)}
+.night .sky-day{opacity:0}
+.night .sky-night{opacity:1}
+.night .sky-day{transition:opacity 0.96s ease-in-out 0.42s}
+:root:not(.night) .sky-night{transition:opacity 0.84s ease-in-out 0.18s}
+.screen.tl .sky-dusk{animation:dusk 1.68s ease-in-out}
+@keyframes dusk{0%{opacity:0}42%{opacity:.95}62%{opacity:.8}100%{opacity:0}}
+.stars{opacity:0;transition:opacity 0.72s ease-in 0.12s}
+.night .stars{opacity:1;transition:opacity 0.96s ease-out 0.96s}
+.star{position:absolute;border-radius:50%;background:#fff;box-shadow:0 0 4px rgba(255,255,255,.9);animation:twinkle 1.8s ease-in-out infinite}
+@keyframes twinkle{50%{opacity:.35}}
+.star,.ff{animation-play-state:paused}
+.night .star,.night .ff{animation-play-state:running}
+.sun{will-change:transform,filter;position:absolute;left:62%;top:14%;width:180px;height:180px;margin:-90px;border-radius:50%;
+  background:radial-gradient(circle,#fff 0%,#fff 13%,rgba(255,255,255,.65) 24%,rgba(255,220,245,.35) 42%,rgba(255,215,245,0) 70%);
+  transition:transform 1.38s cubic-bezier(.3,0,.3,1) 0.3s,filter 1.38s 0.3s}
+.night .sun{transform:translateY(340px) scale(1.15);filter:sepia(1) saturate(4) hue-rotate(-20deg);transition:transform 1.44s cubic-bezier(.5,0,.7,1),filter 0.96s}
+.moon{position:absolute;left:24%;top:17%;width:46px;height:46px;margin:-23px;border-radius:50%;
+  background:radial-gradient(circle at 36% 34%,#fffdf0 0%,#f2ead0 55%,#d6c99e 100%);
+  box-shadow:0 0 26px 6px rgba(255,245,215,.35),inset -6px -5px 0 rgba(170,160,130,.35);
+  transform:translateY(340px);transition:transform 0.96s cubic-bezier(.5,0,.7,1)}
+.moon::before,.moon::after{content:"";position:absolute;border-radius:50%;background:rgba(180,170,140,.35)}
+.moon::before{left:12px;top:10px;width:9px;height:9px}.moon::after{left:26px;top:24px;width:6px;height:6px}
+.night .moon{transform:none;transition:transform 1.32s cubic-bezier(.2,.6,.3,1) 0.72s}
+.flarebox{transition:opacity 0.48s}
+.night .flarebox{opacity:0}
+.cloudbox{position:absolute;left:0;top:0;height:52%;will-change:transform,filter;transition:transform 1.68s cubic-bezier(.6,0,.35,1),filter 1.2s ease-in-out 0.3s}
+.night .cloudbox{filter:brightness(.3) saturate(.6) hue-rotate(10deg)}
+.haze{position:absolute;left:0;right:0;top:47%;height:20%;pointer-events:none;filter:blur(6px);background:radial-gradient(75% 45% at 50% 52%,rgba(255,255,255,.8) 0%,rgba(230,248,255,.35) 45%,rgba(255,255,255,0) 72%);
+  transition:opacity 0.96s 0.3s}
+.night .haze{opacity:.18}
+.ground{position:absolute;left:0;right:0;top:55.5%;bottom:0;will-change:filter;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 26px);mask-image:linear-gradient(180deg,transparent 0,#000 26px);
+  background:linear-gradient(180deg,#a6e65c 0%,#5fca2a 24%,#2f9e1a 62%,#1d7a12 100%);transition:filter 1.2s ease-in-out 0.36s}
+.night .ground,.night .grass-fx{filter:brightness(.3) saturate(.7) hue-rotate(15deg)}
+.grass-fx{transition:filter 1.2s ease-in-out 0.36s;will-change:filter}
+.fireflies{opacity:0;transition:opacity 0.6s}
+.night .fireflies{opacity:1;transition:opacity 1.2s 1.2s}
+.ff{position:absolute;width:4px;height:4px;border-radius:50%;background:#ffe9a0;box-shadow:0 0 8px 3px rgba(255,214,90,.7);animation:ff 3.6s ease-in-out infinite alternate}
+@keyframes ff{0%{transform:translate(0,0);opacity:.2}50%{opacity:1}100%{transform:translate(18px,-14px);opacity:.4}}
+.screen::after{content:"";position:absolute;inset:0;border-radius:40px;pointer-events:none;z-index:7;
+  box-shadow:inset 0 4px 12px rgba(0,15,50,.55),inset 0 0 0 1px rgba(0,0,0,.35);
+  }
+.screen::before{content:"";position:absolute;inset:0;border-radius:40px;pointer-events:none;z-index:7;
+  background:var(--refl-soft);box-shadow:inset 0 2px 0 rgba(255,255,255,.35);transition:opacity .9s ease-in-out .3s}
+.night .lcd::after,.night .ed-lcd::after,.night .screen::before{opacity:0}
+.grass-fx{position:absolute;inset:0;pointer-events:none}
+.cloud{position:absolute;border-radius:50%;background:#fff;filter:blur(7px);opacity:.92}
+.flare{position:absolute;border-radius:50%;border:2px solid rgba(255,255,255,.28);box-shadow:0 0 12px rgba(255,255,255,.25)}
+.flare.f{border:none;background:radial-gradient(circle,rgba(190,240,255,.35),rgba(190,240,255,0) 70%)}
+.bokeh{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.9),rgba(220,255,200,.35) 45%,rgba(255,255,255,0) 70%)}
+.blade{position:absolute;bottom:0;width:3px;border-radius:3px 3px 0 0;background:linear-gradient(180deg,#c9ff8a,#3fae1c);transform-origin:bottom;opacity:.85}
+.drop-deco{position:absolute;border-radius:50%;
+  background:radial-gradient(circle at 50% 78%,rgba(215,245,255,.95) 0%,rgba(110,200,255,.55) 32%,rgba(255,255,255,0) 52%),
+             linear-gradient(180deg,rgba(90,190,60,.75) 0%,rgba(140,215,90,.35) 48%,rgba(80,170,240,.55) 60%,rgba(30,110,200,.7) 100%);
+  box-shadow:inset 0 0 8px rgba(255,255,255,.8),0 4px 10px rgba(0,60,20,.35)}
+.drop-deco::before{content:"";position:absolute;left:22%;top:10%;width:40%;height:22%;border-radius:50%;background:rgba(255,255,255,.85);filter:blur(1px)}
+
+/* cabecera dentro de la pantalla: hueco 16 → R24 */
+.screen-head{position:absolute;left:16px;right:16px;top:16px;height:48px;z-index:3;display:flex;gap:8px;align-items:center;padding:0 8px 0 20px;
+  border-radius:24px;background:linear-gradient(180deg,var(--glass-a),var(--glass-b));backdrop-filter:blur(10px) saturate(1.3);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 2px 8px rgba(0,40,100,.2)}
+.screen-head .t{font:800 12px "Segoe UI";letter-spacing:3px;color:#fff;text-shadow:0 1px 3px rgba(0,40,110,.7)}
+.screen-head .grow{flex:1}
+.search{height:32px;padding:0 14px;border-radius:16px;border:none;width:150px;outline:none;color:var(--field-ink);font:13px "Segoe UI";
+  background:var(--field);box-shadow:inset 0 1px 3px rgba(0,40,90,.3)}
+.wbtn{width:32px;height:32px;border-radius:16px;border:none;cursor:pointer;font:700 15px/1 "Segoe UI";color:var(--btn-ink);flex:none;
+  background:linear-gradient(180deg,var(--btn-a),var(--btn-c));box-shadow:0 2px 0 var(--btn-edge),0 3px 5px rgba(0,25,70,.3),inset 0 1px 0 var(--btn-hl)}
+.wbtn.on{background:linear-gradient(180deg,#e9ffd9,#97d96b);color:#245d0c}
+.wbtn:active,.wbtn.on{transform:translateY(2px);box-shadow:0 0 0 var(--btn-edge),inset 0 2px 3px rgba(0,40,90,.25)}
+.wbtn.x{color:#c62e26}
+.dn{position:relative;flex:none;width:60px;height:32px;border-radius:16px;border:none;cursor:pointer;overflow:hidden;
+  background:linear-gradient(180deg,#8fd6ff,#2b9be8);box-shadow:inset 0 2px 4px rgba(0,30,80,.5),0 1px 0 rgba(255,255,255,.55);transition:background .8s}
+.dn::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .8s;
+  background:radial-gradient(1px 1px at 12px 9px,#fff 99%,transparent),radial-gradient(1px 1px at 20px 20px,#fff 99%,transparent),radial-gradient(1.5px 1.5px at 8px 22px,#fff 99%,transparent)}
+.dn-knob{position:absolute;left:3px;top:3px;width:26px;height:26px;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,#fffbd0,#ffd23a 60%,#f5a300);box-shadow:0 0 10px rgba(255,210,60,.9),0 2px 3px rgba(0,0,0,.3);
+  transition:transform .7s cubic-bezier(.5,1.5,.5,1),background .7s,box-shadow .7s}
+.night .dn{background:linear-gradient(180deg,#081030,#1d2a5a)}
+.night .dn::before{opacity:1}
+.night .dn-knob{transform:translateX(28px);background:radial-gradient(circle at 40% 35%,#ffffff,#e8ebf3 60%,#b9c0d0);
+  box-shadow:0 0 10px rgba(220,230,255,.7),inset -7px -3px 0 rgba(130,140,170,.55)}
+
+.grid{position:absolute;left:12px;right:12px;top:76px;bottom:12px;overflow:auto;z-index:2;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:12px 10px;align-content:start;padding:8px 10px 20px}
+.grid::-webkit-scrollbar{width:10px}
+.grid::-webkit-scrollbar-thumb{border-radius:8px;background:rgba(255,255,255,.6);border:2px solid transparent;background-clip:padding-box}
+.snd{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:4px}
+.orb{position:relative;width:100px;height:100px;border-radius:50%;transition:transform .2s cubic-bezier(.3,1.7,.5,1);filter:brightness(var(--orb-b));
+  background:
+    radial-gradient(circle at 50% 80%,rgba(225,248,255,.95) 0%,rgba(130,210,255,.6) 30%,rgba(255,255,255,0) 50%),
+    linear-gradient(180deg,rgba(70,175,45,.55) 0%,rgba(150,225,100,.3) 45%,rgba(120,205,255,.45) 58%,rgba(25,105,200,.65) 100%);
+  border:1px solid rgba(255,255,255,.75);
+  box-shadow:inset 0 0 14px rgba(255,255,255,.75),inset 0 -6px 14px rgba(10,80,170,.35),0 8px 16px rgba(0,50,20,.35)}
+.orb::before{content:"";position:absolute;left:20%;top:8%;width:46%;height:26%;border-radius:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.2));transform:rotate(-14deg)}
+.orb::after{content:"";position:absolute;right:20%;bottom:18%;width:9px;height:9px;border-radius:50%;background:#fff;box-shadow:0 0 6px 2px rgba(255,255,255,.9)}
+.orb .name{position:absolute;left:8%;right:8%;top:50%;transform:translateY(-50%);text-align:center;font:700 12px/1.15 "Segoe UI";color:var(--pill-ink);
+  padding:4px 6px;border-radius:10px;background:var(--pill-bg);box-shadow:0 1px 3px rgba(0,40,90,.25);
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
+.snd:hover .orb{transform:scale(1.08) translateY(-3px)}
+.snd:active .orb{transform:scale(.92)}
+.snd.pop .orb{animation:pop .35s ease-out}
+@keyframes pop{0%{transform:scale(.88)}55%{transform:scale(1.14)}100%{transform:scale(1)}}
+.snd.playing .orb{box-shadow:inset 0 0 14px rgba(255,255,255,.8),0 0 0 4px rgba(111,226,58,.75),0 0 26px 6px rgba(160,255,110,.85)}
+.snd.playing .orb .name{background:rgba(225,255,200,.9)}
+.night .snd.playing .orb .name{background:rgba(36,72,18,.88);color:#d8ffb8}
+.key{min-height:20px;padding:2px 9px;border-radius:7px;font:700 11px "Segoe UI";color:var(--chip-ink);
+  background:linear-gradient(180deg,var(--chip-a),var(--chip-b));border:1px solid rgba(0,60,120,.25);box-shadow:0 2px 0 rgba(0,50,100,.25)}
+.key.none{opacity:0;background:rgba(255,255,255,.5)}
+.snd:hover .key.none{opacity:.85}
+.empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:#fff;font-size:14px;text-shadow:0 1px 3px rgba(0,40,100,.7)}
+.empty .big{font-size:46px}
+
+/* ═════════ CAJÓN (dentro de la pantalla, hueco 12 → R28) ═════════ */
+.drawer{position:absolute;right:12px;top:12px;bottom:12px;width:360px;z-index:5;padding:20px 18px 14px;overflow:auto;border-radius:28px;
+  background:linear-gradient(180deg,rgba(244,250,255,.94),rgba(220,236,250,.9));backdrop-filter:blur(20px) saturate(1.3);
+  box-shadow:0 10px 30px rgba(0,30,80,.45),inset 0 1px 0 #fff;
+  transform:translateX(30px);opacity:0;pointer-events:none;transition:.25s cubic-bezier(.3,1.2,.5,1)}
+.drawer.open{transform:none;opacity:1;pointer-events:auto}
+.drawer::-webkit-scrollbar{width:8px}
+.drawer::-webkit-scrollbar-thumb{border-radius:8px;background:rgba(0,60,120,.25)}
+.drawer h3{margin:2px 4px 10px;font:800 11px "Segoe UI";letter-spacing:2.5px;color:var(--ink-soft)}
+.blk{padding:12px;border-radius:16px;background:#fff;box-shadow:0 1px 3px rgba(0,50,110,.15);margin-bottom:10px}
+.blk .lab{font-weight:700;margin-bottom:8px}
+select{width:100%;height:32px;padding:0 10px;border-radius:8px;border:1px solid rgba(0,90,160,.25);background:linear-gradient(180deg,#fff,#eef4fa);
+  color:var(--ink);font:13px "Segoe UI";outline:none}
+.blk .rw{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--ink-soft)}
+.blk .rw input{flex:1}
+.blk .rw b{width:38px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.blk input[type=range]{background:linear-gradient(180deg,#b9cfe3,#e1edf8);box-shadow:inset 0 1px 2px rgba(0,50,110,.35)}
+.err{display:none;margin-top:7px;font-size:12px;color:#b3261e}
+.hk-row{display:flex;align-items:center;gap:8px;padding:5px 0}
+.hk-row>span:first-child{flex:1;font-weight:600}
+.hk-row .key{cursor:pointer;opacity:1}
+.langs{display:flex;gap:8px;padding:8px}
+.lang{flex:1;height:32px;border-radius:8px;border:none;cursor:pointer;font:700 12.5px "Segoe UI";color:var(--ink-soft);
+  background:linear-gradient(180deg,#f4f8fc,#dfe9f3);box-shadow:0 2px 0 #9fb2c6,inset 0 1px 0 #fff}
+.lang.on{color:#fff;background:linear-gradient(180deg,#5db8f5,#1f86d9);box-shadow:0 2px 0 #11558f,inset 0 1px 0 rgba(255,255,255,.5)}
+.night .lang{color:#c9d4e3;background:linear-gradient(180deg,#323b4c,#252c3a);box-shadow:0 2px 0 #0f1218,inset 0 1px 0 rgba(255,255,255,.1)}
+.night .lang.on{color:#2a1500;background:linear-gradient(180deg,#ffbf6a,#f08a24);box-shadow:0 2px 0 #7a3f00}
+.tip{font-size:12px;color:var(--ink-soft);padding:10px 12px;border-radius:16px;border:1px dashed rgba(0,110,190,.35)}
+
+
+/* ═════════ EDITOR DE RECORTE: módulo LCD tipo Casio (bisel R28 → cristal R18 → teclas R18) ═════════ */
+.editor{position:absolute;left:12px;right:12px;bottom:12px;height:282px;z-index:6;border-radius:28px;padding:10px;
+  background:linear-gradient(180deg,#3a3f46 0%,#1d2126 40%,#15181c 100%);
+  box-shadow:0 12px 30px rgba(0,15,45,.6),inset 0 2px 1px rgba(255,255,255,.18),inset 0 -2px 4px rgba(0,0,0,.6);
+  transform:translateY(24px);opacity:0;pointer-events:none;transition:.24s cubic-bezier(.3,1.3,.5,1)}
+.editor.open{transform:none;opacity:1;pointer-events:auto}
+.editor::after{content:"";position:absolute;inset:0;border-radius:28px;pointer-events:none;
+  background:linear-gradient(170deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,0) 30%)}
+.ed-lcd{position:relative;height:206px;border-radius:18px;overflow:hidden;color:var(--seg);
+  background:radial-gradient(120% 140% at 30% 0%,var(--lcd-bg1) 0%,var(--lcd-bg2) 100%);
+  box-shadow:inset 0 3px 7px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.5);text-shadow:0 0 7px var(--seg-glow)}
+.ed-lcd.lit{background:radial-gradient(120% 140% at 30% 0%,var(--lit1) 0%,var(--lit2) 100%)}
+.ed-lcd::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:var(--refl);transition:opacity .9s ease-in-out .3s;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55);z-index:3}
+.ed-top{position:absolute;left:16px;right:16px;top:10px;height:16px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.ed-top .snm{flex:1;overflow:hidden;font-size:12px;text-overflow:clip}
+.ed-lcd.lit .tag{color:var(--lit1)}
+.ed-lcd .tag{font:800 8px/1 "Segoe UI";letter-spacing:1px;padding:2px 4px;border-radius:3px;background:var(--seg);color:var(--lcd-bg1)}
+.wave{position:absolute;left:4px;right:4px;top:30px;height:136px;cursor:ew-resize}
+.wave canvas{position:absolute;inset:0;width:100%;height:100%}
+.wave .loading{position:absolute;inset:0;display:grid;place-items:center;font-family:"Seg14";font-size:13px}
+.readouts{position:absolute;left:16px;right:16px;bottom:9px;height:22px;display:flex;align-items:center;gap:14px}
+.ro{display:flex;align-items:center;gap:6px}
+.ro .v{font-family:"Seg7";font-size:17px;line-height:1}
+.ro .v.ghosted::before{color:var(--seg-ghost)}
+.ro.len{margin-left:auto}
+.nud{display:flex;gap:3px}
+.nud button{width:18px;height:16px;border-radius:4px;border:1.5px solid var(--seg);background:transparent;color:var(--seg);cursor:pointer;
+  font:900 11px/1 "Segoe UI";padding:0}
+.nud button:hover{background:var(--seg);color:var(--lcd-bg1)}
+.ed-keys{position:absolute;left:10px;right:10px;bottom:10px;height:46px;display:flex;align-items:flex-end;gap:8px}
+.ed-keys .grow{flex:1}
+.kbtn{position:relative;height:36px;min-width:46px;padding:0 14px;border-radius:18px;border:none;cursor:pointer;white-space:nowrap;
+  font:800 10.5px/1 "Segoe UI";letter-spacing:1.2px;color:#e8ecf0;
+  background:linear-gradient(180deg,#5b626b 0%,#3a4048 50%,#2b3036 100%);
+  box-shadow:0 2px 0 #0b0d10,0 3px 5px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .08s,box-shadow .08s}
+.kbtn:active,.kbtn.on{transform:translateY(2px);box-shadow:0 0 0 #0b0d10,inset 0 2px 4px rgba(0,0,0,.6)}
+.kbtn.on{color:#9fe6d4}
+.kbtn.o{color:var(--casio-orange)} .kbtn.b{color:var(--casio-blue)}
+.kbtn.save{background:linear-gradient(180deg,#f7a54a,#e07d16 55%,#c4650a);color:#fff;box-shadow:0 2px 0 #6a3200,0 3px 5px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.45)}
+.kbtn[data-tip]:hover::after{content:attr(data-tip);position:absolute;left:50%;bottom:44px;transform:translateX(-50%);white-space:nowrap;z-index:9;
+  padding:5px 10px;border-radius:9px;background:rgba(0,0,0,.88);color:#fff;font:600 12px "Segoe UI";letter-spacing:0;pointer-events:none}
+.snd .del{position:absolute;left:10px;top:4px;width:26px;height:26px;border-radius:50%;border:none;cursor:pointer;z-index:2;
+  display:grid;place-items:center;font:900 13px/1 "Segoe UI";color:#d6322a;opacity:0;transform:scale(.8);transition:.15s;
+  background:linear-gradient(180deg,var(--chip-a),var(--chip-b));box-shadow:0 2px 0 var(--btn-edge),0 3px 5px rgba(0,0,0,.35)}
+.snd:hover .del{opacity:1;transform:none}
+.snd .del:hover{background:linear-gradient(180deg,#ff8a80,#e0352c);color:#fff}
+.menu button.danger{color:#c62e26}
+.menu button.danger:hover{background:linear-gradient(180deg,#ff7d72,#d6352d);color:#fff}
+.orb .cut{position:absolute;right:4px;top:4px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;
+  background:linear-gradient(180deg,#fff,#dce8f3);box-shadow:0 2px 4px rgba(0,40,90,.35);z-index:1}
+
+.night .drawer{background:linear-gradient(180deg,rgba(28,36,54,.95),rgba(16,22,36,.94));color:#e6edf7;box-shadow:0 10px 30px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.12)}
+.night .drawer h3{color:#ffb35a}
+.night .blk{background:#222b3d;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.night select{background:#141a26;color:#e6edf7;border-color:rgba(255,255,255,.14)}
+.night .blk .rw,.night .tip{color:#9fb0c8}
+.night .tip{border-color:rgba(255,179,90,.35)}
+.night .menu,.night .modal{background:linear-gradient(180deg,#2a3242,#1b212d);color:#e6edf7;box-shadow:0 12px 30px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.1)}
+.night .menu button{color:#e6edf7}
+.night .modal p,.night .combo .wait{color:#9fb0c8}
+.menu{position:fixed;z-index:20;min-width:200px;padding:6px;border-radius:16px;display:none;
+  background:linear-gradient(180deg,#ffffff,#e8f1f9);box-shadow:0 12px 30px rgba(0,30,80,.4),inset 0 1px 0 #fff}
+.menu button{display:flex;width:100%;gap:10px;align-items:center;padding:8px 12px;border:none;background:none;border-radius:10px;
+  font:600 13px "Segoe UI";color:var(--ink);cursor:pointer;text-align:left}
+.menu button:hover{background:linear-gradient(180deg,#5db8f5,#1f86d9);color:#fff}
+.menu hr{border:none;height:1px;background:rgba(0,60,120,.15);margin:4px 6px}
+.modal-bg{position:fixed;inset:0;z-index:30;display:none;place-items:center;background:rgba(5,25,60,.35)}
+.modal-bg.open{display:grid}
+.modal{width:380px;padding:24px;border-radius:28px;text-align:center;background:linear-gradient(180deg,#ffffff,#e6f0f9);
+  box-shadow:0 16px 40px rgba(0,30,80,.5),inset 0 1px 0 #fff}
+.modal h4{margin:0 0 4px;font-size:15px}
+.modal p{margin:0 0 14px;color:var(--ink-soft);font-size:12.5px}
+.combo{min-height:58px;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin-bottom:10px;font:700 18px "Segoe UI"}
+.combo .key{font-size:16px;padding:6px 12px;min-height:auto}
+.combo .wait{color:var(--ink-soft);font-weight:500;font-size:14px;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.35}}
+.warn{min-height:18px;font-size:12px;color:#c0392b;margin-bottom:10px}
+.pill{border:none;border-radius:18px;height:36px;padding:0 18px;cursor:pointer;font:600 13px "Segoe UI";color:var(--btn-ink);
+  background:linear-gradient(180deg,#fbfdff,#dce7f2);box-shadow:0 2px 0 #8fa6bd,0 3px 5px rgba(0,25,70,.25),inset 0 1px 0 #fff}
+.pill.red{color:#fff;background:linear-gradient(180deg,#ff7d72,#d6352d);box-shadow:0 2px 0 #8e1f19,0 3px 5px rgba(80,0,0,.25),inset 0 1px 0 rgba(255,255,255,.5)}
+.toast{position:fixed;left:763px;top:84px;z-index:40;transform:translateX(-50%) translateY(16px);opacity:0;pointer-events:none;
+  padding:9px 18px;border-radius:18px;background:rgba(8,30,60,.9);color:#fff;font-size:13px;transition:.25s;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div id="skin">
+<!-- Carcasa: una sola forma; el parachoques es su propio trazo (concéntrico por definición) -->
+<!-- Carcasa pre-pintada (día y noche) a partir de una sola forma SVG con filtro de plástico:
+     como imagen no hay que recalcular la iluminación en cada fotograma de las animaciones -->
+<svg width="0" height="0" style="position:absolute"><defs><path id="shape" d="M154,28 H1028 A64,64 0 0 1 1092,92 V598 A64,64 0 0 1 1028,662 H247.91 A40,40 0 0 0 224.78,669.37 A112,112 0 0 1 78.95,500.71 A40,40 0 0 0 90,473.10 V92 A64,64 0 0 1 154,28 Z"/></defs></svg>
+<img id="chassis" src="img/chassis-day.webp" draggable="false" alt="">
+
+<img id="chassisN" class="chassisN" src="img/chassis-night.webp" draggable="false" alt="">
+
+<div class="abs bezel">
+  <div class="lcd" id="lcd">
+    <div class="top">
+      <div><span class="tag">SND</span><span class="seg14 ghosted" data-ghost="~~" id="lcdCount">0</span></div>
+      <div><span class="tag">MIC</span><span class="seg14 ghosted" data-ghost="~~~~" id="lcdMic">ON</span></div>
+    </div>
+    <div class="big seg7 ghosted" data-ghost="88:88" id="clock">00:00</div>
+    <div class="sec seg7 ghosted" data-ghost="88" id="cs">00</div>
+    <div class="name seg14"><span id="nowName">IDLE</span></div>
+    <div class="vu">
+      <div><b>MIC</b><div class="bars" id="vu_mic"></div></div>
+      <div><b>CALL</b><div class="bars" id="vu_call"></div></div>
+      <div><b data-i18n="vu_me">YO</b><div class="bars" id="vu_me"></div></div>
+    </div>
+  </div>
+  <div class="printrow"><span class="brand">BUBBLEPAD</span><span class="model">MIC MIXER <i>BP-1</i></span></div>
+</div>
+
+<div class="abs tray icons">
+  <button class="pbtn" id="addBtn" data-i18n-tip="add" data-tip="Añadir sonidos">＋</button>
+  <button class="pbtn" id="folderBtn" data-i18n-tip="folder" data-tip="Carpeta de sonidos">📁</button>
+  <button class="pbtn" id="refreshBtn" data-i18n-tip="refresh" data-tip="Actualizar">⟳</button>
+  <button class="pbtn" id="settingsBtn" data-i18n-tip="settings" data-tip="Audio y atajos">⚙</button>
+</div>
+
+<div class="abs tray sliders">
+  <div class="sl"><label><span data-i18n="your_voice">Tu voz</span><span id="vv_lbl">100%</span></label><input type="range" id="vol_mic_main" min="0" max="2" step="0.01"></div>
+  <div class="sl"><label><span data-i18n="sounds_call">Sonidos en llamada</span><span id="vc_lbl">80%</span></label><input type="range" id="vol_call_main" min="0" max="2" step="0.01"></div>
+  <div class="sl"><label><span data-i18n="sounds_me">Sonidos para mí</span><span id="vm_lbl">60%</span></label><input type="range" id="vol_me_main" min="0" max="2" step="0.01"></div>
+</div>
+
+<div class="abs well stopwell"><button class="stop" id="stopBtn" data-i18n-title="stop_all_esc" title="Parar todos los sonidos (Esc)"></button></div>
+<div class="print" style="left:308px;top:614px;width:104px;text-align:center" data-i18n="stop_all_short">Parar todo</div>
+
+<button class="abs ring" id="muteBtn" data-i18n-title="mute_tip" title="Activar / silenciar tu micrófono"><span class="cap" id="muteIco">🎙</span></button>
+
+
+<!-- tirador de tamaño: surcos concéntricos con la esquina (centro 1028,598; entre la pantalla r43 y la carcasa r64) -->
+<svg id="gripSvg" viewBox="0 0 1120 720" style="position:absolute;left:0;top:0;width:1120px;height:720px;pointer-events:none;z-index:8">
+  <g fill="none" stroke-linecap="round">
+    <path d="M1074.1,614.8 A49,49 0 0 1 1044.8,644.1" stroke="var(--print-sh)" stroke-width="2"/>
+    <path d="M1074.1,615.8 A49,49 0 0 1 1045.8,644.1" stroke="rgba(255,255,255,.35)" stroke-width="1" transform="translate(.6,.8)"/>
+    <path d="M1080.6,617.0 A56,56 0 0 1 1047.0,650.6" stroke="var(--print-sh)" stroke-width="2"/>
+    <path d="M1080.6,618.0 A56,56 0 0 1 1048.0,650.6" stroke="rgba(255,255,255,.35)" stroke-width="1" transform="translate(.6,.8)"/>
+    <path id="gripHit" d="M1078,610 A52.5,52.5 0 0 1 1040,648" stroke="transparent" stroke-width="26" style="pointer-events:stroke;cursor:nwse-resize"/>
+  </g>
+</svg>
+<div class="print" id="scaleLbl" style="left:880px;top:647px;width:130px;text-align:right;opacity:.75">TAMAÑO 100%</div>
+<div class="abs screen" id="screen">
+  <div class="L sky-day"></div><div class="L sky-dusk"></div><div class="L sky-night"></div>
+  <div class="L stars" id="stars"></div>
+  <div class="sun"></div><div class="moon"></div>
+  <div class="L flarebox" id="flares"></div>
+  <div class="cloudbox" id="clouds"></div>
+  <div class="ground"></div>
+  <div class="haze"></div>
+  <div class="grass-fx" id="grassfx"></div>
+  <div class="L fireflies" id="fireflies"></div>
+  <div class="screen-head">
+    <div class="t" data-i18n="sounds_title">SONIDOS</div><div class="grow"></div>
+    <input class="search" id="search" data-i18n-ph="search" placeholder="Buscar…">
+    <button class="wbtn" id="sortBtn" data-i18n-title="sort_tip" title="Sonidos con atajo primero">⌨</button>
+    <button class="dn" id="themeBtn" data-i18n-title="theme_tip" title="Día / noche"><span class="dn-knob"></span></button>
+    <button class="wbtn" id="minBtn" data-i18n-title="minimize" title="Minimizar">–</button>
+    <button class="wbtn x" id="closeBtn" data-i18n-title="hide_tray" title="Esconder en la bandeja">×</button>
+  </div>
+  <div class="grid" id="grid"></div>
+
+
+  <section class="editor" id="editor">
+    <div class="ed-lcd" id="edLcd">
+      <div class="ed-top"><span class="tag">TRIM</span><span class="snm seg14" id="edName"></span></div>
+      <div class="wave" id="wave"><canvas id="waveCv"></canvas><div class="loading" id="waveLoad">CARGANDO</div></div>
+      <div class="readouts">
+        <div class="ro"><span class="tag">IN</span><span class="v ghosted" data-ghost="88:88.88" id="roStart">00:00.00</span>
+          <span class="nud"><button data-n="s-" title="−10 ms">−</button><button data-n="s+" title="+10 ms">+</button></span></div>
+        <div class="ro"><span class="tag">OUT</span><span class="v ghosted" data-ghost="88:88.88" id="roEnd">00:00.00</span>
+          <span class="nud"><button data-n="e-" title="−10 ms">−</button><button data-n="e+" title="+10 ms">+</button></span></div>
+        <div class="ro len"><span class="tag">LEN</span><span class="v ghosted" data-ghost="88:88.88" id="roLen">00:00.00</span></div>
+      </div>
+    </div>
+    <div class="ed-keys">
+      <button class="kbtn b" id="edPlay" data-i18n-tip="ed_play" data-tip="Escuchar la selección en tus cascos (Espacio)">▶ PLAY</button>
+      <button class="kbtn" id="edStop" data-i18n-tip="ed_stop" data-tip="Parar">■</button>
+      <button class="kbtn o" id="edAuto" data-i18n-tip="ed_auto" data-tip="Quita los silencios del principio y del final">AUTO</button>
+      <button class="kbtn" id="edReset" data-i18n-tip="ed_reset" data-tip="Volver al audio completo">RESET</button>
+      <div class="grow"></div>
+      <button class="kbtn" id="edCancel" data-i18n-tip="ed_cancel_tip" data-tip="Cerrar sin guardar (Esc)" data-i18n="cancel_up">CANCELAR</button>
+      <button class="kbtn save" id="edSave" data-i18n="save_up">GUARDAR</button>
+    </div>
+  </section>
+  <aside class="drawer" id="drawer">
+    <h3>AUDIO</h3>
+    <div class="blk">
+      <div class="lab" data-i18n="lab_mic">🎙 Tu micrófono</div>
+      <select id="mic"></select>
+      <div class="rw"><span data-i18n="volume">Volumen</span><input type="range" id="vol_mic" min="0" max="2" step="0.01"><b id="vol_mic_v"></b></div>
+      <div class="err" id="err_mic"></div>
+    </div>
+    <div class="blk">
+      <div class="lab" data-i18n="lab_cable">➜ Micro virtual (para Discord)</div>
+      <select id="cable"></select>
+      <div class="rw"><span data-i18n="sounds">Sonidos</span><input type="range" id="vol_call" min="0" max="2" step="0.01"><b id="vol_call_v"></b></div>
+      <div class="err" id="err_cable"></div>
+    </div>
+    <div class="blk">
+      <div class="lab" data-i18n="lab_monitor">🎧 Escuchar yo en</div>
+      <select id="monitor"></select>
+      <div class="rw"><span data-i18n="sounds">Sonidos</span><input type="range" id="vol_me" min="0" max="2" step="0.01"><b id="vol_me_v"></b></div>
+      <div class="err" id="err_monitor"></div>
+    </div>
+    <h3 data-i18n="global_hk">ATAJOS GENERALES</h3>
+    <div class="blk">
+      <div class="hk-row"><span data-i18n="stop_all">Parar todos los sonidos</span><span class="key" data-action="stop"></span></div>
+      <div class="hk-row"><span data-i18n="mute_toggle">Silenciar / activar micro</span><span class="key" data-action="mute"></span></div>
+    </div>
+    <h3 data-i18n="lang_title">IDIOMA</h3>
+    <div class="blk langs"><button class="lang" data-lang="es">Español</button><button class="lang" data-lang="en">English</button></div>
+    <div class="tip" data-i18n-html="tip">Los atajos funcionan con la ventana minimizada o escondida.
+      Para asignar uno a un sonido: <b>clic derecho</b> sobre su burbuja.<br><br>
+      En Discord → Voz y vídeo → Micrófono: <b>CABLE Output</b>.</div>
+  </aside>
+</div>
+</div>
+
+<div class="menu" id="menu">
+  <button data-m="play" data-i18n="m_play">▶ Reproducir</button>
+  <button data-m="hotkey" data-i18n="m_hotkey">⌨ Asignar atajo…</button>
+  <button data-m="unhotkey" data-i18n="m_unhotkey">✕ Quitar atajo</button>
+  <button data-m="trim" data-i18n="m_trim">✂ Recortar…</button>
+  <hr>
+  <button data-m="stop" data-i18n="m_stop">■ Parar este sonido</button>
+  <hr>
+  <button data-m="delete" class="danger" data-i18n="m_delete">✕ Eliminar sonido…</button>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h4 id="capTitle">Atajo</h4>
+    <p data-i18n-html="cap_help">Pulsa la combinación de teclas. <b>Esc</b> para cancelar.</p>
+    <div class="combo" id="combo"><span class="wait">Esperando teclas…</span></div>
+    <div class="warn" id="capWarn"></div>
+    <button class="pill red" id="capRemove" data-i18n="remove_hk">Quitar atajo</button>
+    <button class="pill" id="capCancel" data-i18n="cancel">Cancelar</button>
+  </div>
+</div>
+<div class="modal-bg" id="delBg">
+  <div class="modal">
+    <h4 id="delTitle">¿Eliminar?</h4>
+    <p data-i18n-html="del_help">Se quita de la soundboard y el archivo va a la <b>papelera de reciclaje</b> (se puede recuperar desde ahí).</p>
+    <button class="pill" id="delCancel" data-i18n="cancel">Cancelar</button>
+    <button class="pill red" id="delOk" data-i18n="delete">Eliminar</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let THEME='day', SORT_HK=true, themeInit=false;
+let bridge=null, S=null, playing=new Set(), menuSid=null, capAction=null, clockStart=null, lastName='';
+
+$('delBg').style.clipPath = $('modalBg').style.clipPath = `path('${document.querySelector('#shape').getAttribute('d')}')`;
+
+const CW=610;                          // ancho de un "tramo" de nubes (= ancho de la pantalla)
+let cloudX=-CW;
+function decorate(){
+  const grass=$('grassfx'); const R=(a,b)=>a+Math.random()*(b-a);
+  const add=(p,cls,css)=>{const d=document.createElement('div');d.className=cls;Object.assign(d.style,css);p.appendChild(d);return d;};
+  // nubes: 4 tramos idénticos para que el timelapse pueda girar sin fin
+  const cl=$('clouds'); cl.style.width=4*CW+'px'; cl.style.transform=`translateX(${cloudX}px)`;
+  const tile=[[25,14,150,46],[75,10,90,34],[430,16,170,52],[500,11,110,38],[185,28,120,30],[540,31,140,40],[300,6,80,26]];
+  for(let k=0;k<4;k++) tile.forEach(([x,y,w,h])=>add(cl,'cloud',{left:(x+k*CW)+'px',top:y+'%',width:w+'px',height:h+'px'}));
+  cl.addEventListener('transitionend',e=>{ if(e.propertyName!=='transform') return;
+    while(cloudX<-2*CW) cloudX+=CW; cl.style.transition='none'; cl.style.transform=`translateX(${cloudX}px)`;
+    void cl.offsetWidth; cl.style.transition=''; });
+  [[58,10,70],[66,22,40],[52,30,26],[72,36,18]].forEach(([x,y,s],i)=>
+    add($('flares'),'flare'+(i%2?' f':''),{left:x+'%',top:y+'%',width:s+'px',height:s+'px'}));
+  for(let i=0;i<90;i++){const z=R(1,2.6);add($('stars'),'star',{left:R(0,100)+'%',top:R(0,54)+'%',width:z+'px',height:z+'px',
+    opacity:R(.4,1),animationDelay:R(0,3)+'s',animationDuration:R(2,5)+'s'});}
+  for(let i=0;i<16;i++) add($('fireflies'),'ff',{left:R(3,95)+'%',top:R(62,95)+'%',animationDelay:-R(0,6)+'s',animationDuration:R(4,8)+'s'});
+  for(let i=0;i<26;i++){const s=R(6,26);add(grass,'bokeh',{left:R(0,100)+'%',top:R(58,98)+'%',width:s+'px',height:s+'px',opacity:R(.35,.85)});}
+  for(let i=0;i<70;i++) add(grass,'blade',{left:R(0,100)+'%',height:R(14,46)+'px',transform:`rotate(${R(-18,18)}deg)`});
+  [[6,74,46],[90,66,30],[78,86,22],[18,90,18]].forEach(([x,y,s])=>add(grass,'drop-deco',{left:x+'%',top:y+'%',width:s+'px',height:s+'px'}));
+  for(const id of ['vu_mic','vu_call','vu_me']) $(id).innerHTML=Array.from({length:10},(_,i)=>`<i style="--h:${i}"></i>`).join('');
+}
+
+
+/* ═════════ IDIOMAS ═════════ */
+const I18N={
+ es:{vu_me:'YO',idle:'SILENCIO',add:'Añadir sonidos',folder:'Carpeta de sonidos',refresh:'Actualizar dispositivos y sonidos',settings:'Audio, atajos e idioma',
+  your_voice:'Tu voz',sounds_call:'Sonidos en llamada',sounds_me:'Sonidos para mí',stop_all_esc:'Parar todos los sonidos (Esc)',stop_all_short:'Parar todo',
+  mute_tip:'Activar / silenciar tu micrófono',sounds_title:'SONIDOS',search:'Buscar…',sort_tip:'Sonidos con atajo primero',theme_tip:'Día / noche',
+  minimize:'Minimizar',hide_tray:'Esconder en la bandeja',ed_play:'Escuchar la selección en tus cascos (Espacio)',ed_stop:'Parar',
+  ed_auto:'Quita los silencios del principio y del final',ed_reset:'Volver al audio completo',ed_cancel_tip:'Cerrar sin guardar (Esc)',
+  cancel_up:'CANCELAR',save_up:'GUARDAR',lab_mic:'🎙 Tu micrófono',volume:'Volumen',sounds:'Sonidos',lab_cable:'➜ Micro virtual (para Discord y juegos)',
+  lab_monitor:'🎧 Escuchar yo en',global_hk:'ATAJOS GENERALES',stop_all:'Parar todos los sonidos',mute_toggle:'Silenciar / activar micro',lang_title:'IDIOMA',
+  tip:'Los atajos funcionan con la ventana minimizada o escondida. Para asignar uno a un sonido: <b>clic derecho</b> sobre su burbuja.<br><br>En Discord o tu juego → ajustes de voz → Micrófono: <b>CABLE Output</b>.',
+  m_play:'▶ Reproducir',m_hotkey:'⌨ Asignar atajo…',m_unhotkey:'✕ Quitar atajo',m_trim:'✂ Recortar…',m_stop:'■ Parar este sonido',m_delete:'✕ Eliminar sonido…',
+  cap_help:'Pulsa la combinación de teclas. <b>Esc</b> para cancelar.',remove_hk:'Quitar atajo',cancel:'Cancelar',delete:'Eliminar',
+  del_help:'Se quita de Bubblepad y el archivo va a la <b>papelera de reciclaje</b> (se puede recuperar desde ahí).',
+  none:'— Ninguno —',no_match:'Nada coincide con la búsqueda',empty:'Aún no hay sonidos.<br>Pulsa <b>＋</b> o mete mp3/wav en la carpeta de sonidos.',
+  del_x:'Eliminar sonido',trimmed:'Recortado',hk_add:'⌨ atajo',assign:'Asignar…',cap_stop:'Atajo: parar todo',cap_mute:'Atajo: silenciar micro',
+  cap_for:'Atajo para «{n}»',waiting:'Esperando teclas…',bad_key:'Esa tecla no se puede usar como atajo',
+  need_mod:'Añade Ctrl, Alt o Mayús (solas solo valen F1–F24 y el teclado numérico)',hk_set:'{c} asignado',hk_moved:'{c} asignado (quitado de otra acción)',
+  hk_removed:'Atajo quitado',refreshed:'Dispositivos y sonidos actualizados',sort_on:'Sonidos con atajo primero',sort_off:'Orden alfabético',
+  del_q:'¿Eliminar «{n}»?',loading:'CARGANDO',unreadable:'NO SE PUEDE LEER',auto_done:'Silencios quitados: {a} → {b}',
+  trim_saved:'Recorte guardado (el archivo original no se toca)',size:'TAMAÑO',grip:'Arrastra para cambiar el tamaño · doble clic: 100% · también Ctrl + rueda',
+  keys:{ctrl:'Ctrl',alt:'Alt',shift:'Mayús',win:'Win',Space:'Espacio',Enter:'Intro',Backspace:'Retroceso',Delete:'Supr',Home:'Inicio',End:'Fin',PageUp:'RePág',PageDown:'AvPág',Pause:'Pausa',ScrollLock:'BloqDespl',PrintScreen:'ImprPant'}},
+ en:{vu_me:'ME',idle:'IDLE',add:'Add sounds',folder:'Sounds folder',refresh:'Refresh devices and sounds',settings:'Audio, hotkeys & language',
+  your_voice:'Your voice',sounds_call:'Sounds in call',sounds_me:'Sounds for me',stop_all_esc:'Stop all sounds (Esc)',stop_all_short:'Stop all',
+  mute_tip:'Mute / unmute your microphone',sounds_title:'SOUNDS',search:'Search…',sort_tip:'Sounds with hotkeys first',theme_tip:'Day / night',
+  minimize:'Minimize',hide_tray:'Hide to tray',ed_play:'Preview the selection in your headphones (Space)',ed_stop:'Stop',
+  ed_auto:'Removes silence at the start and end',ed_reset:'Back to the full sound',ed_cancel_tip:'Close without saving (Esc)',
+  cancel_up:'CANCEL',save_up:'SAVE',lab_mic:'🎙 Your microphone',volume:'Volume',sounds:'Sounds',lab_cable:'➜ Virtual mic (for Discord & games)',
+  lab_monitor:'🎧 I listen on',global_hk:'GLOBAL HOTKEYS',stop_all:'Stop all sounds',mute_toggle:'Mute / unmute mic',lang_title:'LANGUAGE',
+  tip:'Hotkeys work even when the window is minimized or hidden. To give a sound a hotkey: <b>right-click</b> its bubble.<br><br>In Discord or your game → voice settings → Microphone: <b>CABLE Output</b>.',
+  m_play:'▶ Play',m_hotkey:'⌨ Set hotkey…',m_unhotkey:'✕ Remove hotkey',m_trim:'✂ Trim…',m_stop:'■ Stop this sound',m_delete:'✕ Delete sound…',
+  cap_help:'Press the key combination. <b>Esc</b> to cancel.',remove_hk:'Remove hotkey',cancel:'Cancel',delete:'Delete',
+  del_help:'It is removed from Bubblepad and the file goes to the <b>Recycle Bin</b> (you can restore it from there).',
+  none:'— None —',no_match:'Nothing matches your search',empty:'No sounds yet.<br>Press <b>＋</b> or drop mp3/wav files into the sounds folder.',
+  del_x:'Delete sound',trimmed:'Trimmed',hk_add:'⌨ hotkey',assign:'Set…',cap_stop:'Hotkey: stop all',cap_mute:'Hotkey: mute mic',
+  cap_for:'Hotkey for “{n}”',waiting:'Waiting for keys…',bad_key:'That key can\'t be used as a hotkey',
+  need_mod:'Add Ctrl, Alt or Shift (only F1–F24 and the numpad work on their own)',hk_set:'{c} set',hk_moved:'{c} set (removed from another action)',
+  hk_removed:'Hotkey removed',refreshed:'Devices and sounds refreshed',sort_on:'Sounds with hotkeys first',sort_off:'Alphabetical order',
+  del_q:'Delete “{n}”?',loading:'LOADING',unreadable:'CAN\'T READ FILE',auto_done:'Silence removed: {a} → {b}',
+  trim_saved:'Trim saved (the original file is untouched)',size:'SIZE',grip:'Drag to resize · double-click: 100% · also Ctrl + wheel',
+  keys:{ctrl:'Ctrl',alt:'Alt',shift:'Shift',win:'Win',Space:'Space',Enter:'Enter',Backspace:'Backspace',Delete:'Del',Home:'Home',End:'End',PageUp:'PgUp',PageDown:'PgDn',Pause:'Pause',ScrollLock:'ScrLk',PrintScreen:'PrtSc'}},
+};
+let LANG='es';
+const T=(k,v={})=>{let s=(I18N[LANG]||I18N.en)[k]??I18N.en[k]??k; for(const[a,b] of Object.entries(v)) s=s.replace('{'+a+'}',b); return s;};
+function applyLang(lang){
+  LANG=I18N[lang]?lang:'en'; document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=T(e.dataset.i18n));
+  document.querySelectorAll('[data-i18n-html]').forEach(e=>e.innerHTML=T(e.dataset.i18nHtml));
+  document.querySelectorAll('[data-i18n-tip]').forEach(e=>e.dataset.tip=T(e.dataset.i18nTip));
+  document.querySelectorAll('[data-i18n-title]').forEach(e=>e.title=T(e.dataset.i18nTitle));
+  document.querySelectorAll('[data-i18n-ph]').forEach(e=>e.placeholder=T(e.dataset.i18nPh));
+  document.querySelectorAll('.lang').forEach(b=>b.classList.toggle('on',b.dataset.lang===LANG));
+  const g=$('gripHit'); if(g) g.innerHTML='<title>'+T('grip')+'</title>';
+  $('scaleLbl').textContent=T('size')+' '+Math.round((window._scale||1)*100)+'%';
+  lastName=''; if(S){ render(S); }
+}
+
+const segText=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().replace(/[^A-Z0-9 +\-.:]/g,' ');
+
+const MODS=new Proxy({},{get:(_,k)=>['ctrl','alt','shift','win'].includes(k)?(T('keys')[k]):undefined});
+const NAMES={Space:'Espacio',ArrowUp:'↑',ArrowDown:'↓',ArrowLeft:'←',ArrowRight:'→',Enter:'Intro',Backspace:'Retroceso',Delete:'Supr',
+  Insert:'Insert',Home:'Inicio',End:'Fin',PageUp:'RePág',PageDown:'AvPág',Tab:'Tab',Pause:'Pausa',ScrollLock:'BloqDespl',PrintScreen:'ImprPant',
+  Minus:'-',Equal:'=',Comma:',',Period:'.',Slash:'/',Semicolon:'Ñ',Quote:"'",BracketLeft:'`',BracketRight:'+',Backslash:'Ç',Backquote:'º',IntlBackslash:'<'};
+const NUMP={Multiply:'*',Add:'+',Subtract:'-',Decimal:'.',Divide:'/'};
+const VALID=/^(Key[A-Z]|Digit\d|Numpad\d|F([1-9]|1\d|2[0-4])|Numpad(Multiply|Add|Subtract|Decimal|Divide)|Space|Enter|Tab|Backspace|Insert|Delete|Home|End|PageUp|PageDown|Arrow(Left|Up|Right|Down)|Pause|ScrollLock|PrintScreen|Minus|Equal|Comma|Period|Slash|Semicolon|Quote|BracketLeft|BracketRight|Backslash|Backquote|IntlBackslash)$/;
+const SOLO_OK=/^(F([1-9]|1\d|2[0-4])|Numpad.*|Pause|ScrollLock|Insert)$/;
+const keyName=c=>c.startsWith('Key')?c.slice(3):c.startsWith('Digit')?c.slice(5):c.startsWith('Numpad')?'Num '+(NUMP[c.slice(6)]??c.slice(6)):(T('keys')[c]||NAMES[c]||c);
+const parts=combo=>combo.split('+').map(p=>MODS[p]||keyName(p));
+const label=combo=>combo?parts(combo).join(' + '):'';
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2600);}
+
+function fillSelect(sel,list,value){
+  sel.innerHTML='';const o0=document.createElement('option');o0.value='';o0.textContent=T('none');sel.appendChild(o0);
+  for(const n of list){const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);}
+  sel.value=list.includes(value)?value:'';
+}
+function setVol(k,v){
+  $(k).value=v; $(k+'_v').textContent=Math.round(v*100)+'%';
+  if(k==='vol_mic'){$('vol_mic_main').value=v;$('vv_lbl').textContent=Math.round(v*100)+'%';}
+  if(k==='vol_call'){$('vol_call_main').value=v;$('vc_lbl').textContent=Math.round(v*100)+'%';}
+  if(k==='vol_me'){$('vol_me_main').value=v;$('vm_lbl').textContent=Math.round(v*100)+'%';}
+}
+function applyTheme(t, animate){
+  const root=document.documentElement;
+  if(!animate){ root.classList.add('noanim'); }
+  else{ const sc=$('screen'); sc.classList.remove('tl'); void sc.offsetWidth; sc.classList.add('tl');
+        setTimeout(()=>sc.classList.remove('tl'),1800);
+        cloudX-=CW*0.85; $('clouds').style.transform=`translateX(${cloudX}px)`;   // nubes en timelapse
+        const until=performance.now()+2300; (function f(){ if(ED.sid) drawWave(); if(performance.now()<until) requestAnimationFrame(f); })(); }
+  THEME=t; root.classList.toggle('night',t==='night');
+  if(!animate){ void root.offsetWidth; requestAnimationFrame(()=>requestAnimationFrame(()=>root.classList.remove('noanim'))); }
+}
+function render(state){
+  S=state; S.hotkeys=S.hotkeys||{}; const ui=S.ui||{};
+  if(!themeInit){ themeInit=true; applyTheme(ui.theme==='night'?'night':'day',false); SORT_HK=ui.sort_hotkeys!==false; }
+  if(ui.lang && ui.lang!==LANG){ applyLang(ui.lang); return; }
+  $('sortBtn').classList.toggle('on',SORT_HK);
+  fillSelect($('mic'),S.inputs,S.mic); fillSelect($('cable'),S.outputs,S.cable); fillSelect($('monitor'),S.outputs,S.monitor);
+  for(const k of ['vol_mic','vol_call','vol_me']) setVol(k,S[k]);
+  for(const k of ['mic','cable','monitor']){const e=$('err_'+k),m=(S.errors||{})[k];e.style.display=m?'block':'none';e.textContent=m||'';}
+  $('muteBtn').classList.toggle('muted',S.mic_muted);
+  $('muteIco').textContent=S.mic_muted?'🔇':'🎙';
+  const ok=S.cable&&!(S.errors||{}).cable;
+  $('lcdMic').textContent=!ok?'CABL':S.mic_muted?'OFF':'ON';
+  document.querySelectorAll('.hk-row .key').forEach(k=>{const c=S.hotkeys[k.dataset.action];k.textContent=c?label(c):T('assign');});
+  if(!ok) openDrawer(true);
+  renderGrid();
+}
+function renderGrid(){
+  const g=$('grid'),q=$('search').value.trim().toLowerCase(); g.innerHTML='';
+  let list=(S?.sounds||[]).filter(s=>s.name.toLowerCase().includes(q));
+  if(SORT_HK){ const hk=s=>S.hotkeys['play:'+s.id]?0:1;
+    list=[...list].sort((a,b)=>hk(a)-hk(b)||a.name.localeCompare(b.name,LANG,{sensitivity:'base'})); }
+  if(!list.length){g.innerHTML=`<div class="empty"><div class="big">🫧</div>${S?.sounds?.length?T('no_match'):T('empty')}</div>`;return;}
+  for(const s of list){
+    const c=S.hotkeys['play:'+s.id];
+    const b=document.createElement('button');b.className='snd'+(playing.has(s.id)?' playing':'');b.dataset.id=s.id;
+    b.innerHTML='<div class="orb"><div class="name"></div></div><div class="key"></div><span class="del" title="'+T('del_x')+'">✕</span>';
+    b.querySelector('.name').textContent=s.name;
+    if((S.trims||{})[s.id]) b.querySelector('.orb').insertAdjacentHTML('beforeend','<span class="cut" title="'+T('trimmed')+'">✂</span>');
+    const k=b.querySelector('.key'); k.textContent=c?label(c):T('hk_add'); if(!c) k.classList.add('none');
+    b.onclick=e=>{ if(e.target===k){openCapture('play:'+s.id,s.name);return;}
+      if(e.target.closest('.del')){askDelete(s);return;}
+      bridge.play(s.id); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); };
+    b.oncontextmenu=e=>{e.preventDefault();openMenu(e.clientX,e.clientY,s);};
+    g.appendChild(b);
+  }
+}
+
+function bars(id,v){ const n=Math.round(Math.sqrt(Math.min(1,v))*10); $(id).querySelectorAll('i').forEach((el,i)=>el.classList.toggle('on',i<n)); }
+function setName(txt){
+  if(txt===lastName) return; lastName=txt;
+  const sp=$('nowName'); sp.textContent=txt; sp.classList.remove('scroll'); sp.style.removeProperty('--shift');
+  const over=sp.scrollWidth-sp.parentElement.clientWidth;
+  if(over>0){ sp.style.setProperty('--shift',-over+'px'); sp.style.animationDuration=(3+over/30)+'s'; sp.classList.add('scroll'); }
+}
+let lastClock='';
+function tickClock(){
+  const ms=clockStart?performance.now()-clockStart:0, t=Math.floor(ms/1000);
+  const txt=String(Math.floor(t/60)%100).padStart(2,'0')+':'+String(t%60).padStart(2,'0')+'|'+String(Math.floor(ms/10)%100).padStart(2,'0');
+  if(txt!==lastClock){ lastClock=txt; const [a,b]=txt.split('|'); $('clock').textContent=a; $('cs').textContent=b; }   // solo pinta si cambia
+  if(clockStart) requestAnimationFrame(tickClock); else setTimeout(tickClock,250);
+}
+function onLevels(json){
+  const d=JSON.parse(json); bars('vu_mic',d.levels.mic); bars('vu_call',d.levels.call); bars('vu_me',d.levels.me);
+  ED.previewing=d.playing.includes('__preview__');
+  const now=new Set(d.playing.filter(x=>x!=='__preview__'));
+  document.querySelectorAll('.snd').forEach(b=>b.classList.toggle('playing',now.has(b.dataset.id)));
+  if(now.size&&!playing.size) clockStart=performance.now();
+  if(!now.size) clockStart=null;
+  playing=now;
+  $('lcd').classList.toggle('lit',now.size>0);
+  const names=[...now].map(id=>(S?.sounds||[]).find(s=>s.id===id)?.name||id);
+  setName(names.length?segText(names.join(' + ')):T('idle'));
+  $('lcdCount').textContent=String(now.size);
+}
+
+function openMenu(x,y,s){
+  menuSid=s; const m=$('menu'); m.style.display='block';
+  m.querySelector('[data-m=unhotkey]').style.display=S.hotkeys['play:'+s.id]?'flex':'none';
+  m.style.left=Math.min(x,innerWidth-m.offsetWidth-10)+'px'; m.style.top=Math.min(y,innerHeight-m.offsetHeight-10)+'px';
+}
+let delSid=null;
+function askDelete(s){ closeMenu(); delSid=s; $('delTitle').textContent=T('del_q',{n:s.name}); $('delBg').classList.add('open'); }
+function closeDelete(){ delSid=null; $('delBg').classList.remove('open'); }
+function closeMenu(){$('menu').style.display='none';}
+function openDrawer(on){ const d=$('drawer'); d.classList.toggle('open',on); $('settingsBtn').classList.toggle('on',on); }
+
+function openCapture(action,name){
+  capAction=action; closeMenu();
+  $('capTitle').textContent=action==='stop'?T('cap_stop'):action==='mute'?T('cap_mute'):T('cap_for',{n:name});
+  $('combo').innerHTML='<span class="wait">'+T('waiting')+'</span>'; $('capWarn').textContent='';
+  $('capRemove').style.display=S.hotkeys[action]?'':'none';
+  $('modalBg').classList.add('open'); bridge.capturing(true);
+}
+function closeCapture(){ if(!capAction) return; capAction=null; $('modalBg').classList.remove('open'); bridge.capturing(false); }
+function showCombo(list){$('combo').innerHTML=list.map(p=>`<span class="key">${p}</span>`).join('<span>+</span>');}
+function onCaptureKey(e){
+  e.preventDefault(); e.stopPropagation();
+  if(e.code==='Escape'&&!e.ctrlKey&&!e.altKey&&!e.shiftKey){closeCapture();return;}
+  const mods=[]; if(e.ctrlKey)mods.push('ctrl'); if(e.altKey)mods.push('alt'); if(e.shiftKey)mods.push('shift'); if(e.metaKey)mods.push('win');
+  if(/^(Control|Alt|Shift|Meta|OS)/.test(e.code)){ showCombo([...mods.map(m=>MODS[m]),'…']); return; }
+  if(!VALID.test(e.code)){ $('capWarn').textContent=T('bad_key'); return; }
+  if(!mods.length&&!SOLO_OK.test(e.code)){ showCombo([keyName(e.code)]); $('capWarn').textContent=T('need_mod'); return; }
+  const combo=[...mods,e.code].join('+');
+  const other=Object.entries(S.hotkeys).find(([a,c])=>c===combo&&a!==capAction);
+  showCombo(parts(combo));
+  const action=capAction; closeCapture();
+  bridge.setHotkey(action,combo);
+  toast(T(other?'hk_moved':'hk_set',{c:label(combo)}));
+}
+
+function wire(){
+  for(const k of ['mic','cable','monitor']) $(k).onchange=e=>bridge.setDevice(k,e.target.value);
+  for(const k of ['vol_mic','vol_call','vol_me']) $(k).oninput=e=>{const v=+e.target.value;setVol(k,v);bridge.setVolume(k,v);};
+  $('vol_call_main').oninput=e=>{const v=+e.target.value;setVol('vol_call',v);bridge.setVolume('vol_call',v);};
+  $('vol_mic_main').oninput=e=>{const v=+e.target.value;setVol('vol_mic',v);bridge.setVolume('vol_mic',v);};
+  $('vol_me_main').oninput=e=>{const v=+e.target.value;setVol('vol_me',v);bridge.setVolume('vol_me',v);};
+  $('muteBtn').onclick=()=>bridge.toggleMute();
+  $('stopBtn').onclick=()=>bridge.stop('');
+  $('addBtn').onclick=()=>bridge.addSounds();
+  $('folderBtn').onclick=()=>bridge.openFolder();
+  $('refreshBtn').onclick=()=>{bridge.refresh();toast(T('refreshed'));};
+  $('settingsBtn').onclick=()=>openDrawer(!$('drawer').classList.contains('open'));
+  window.addEventListener('wheel',e=>{ if(e.ctrlKey){ e.preventDefault(); bridge.zoomStep(e.deltaY<0?1:-1); } },{passive:false});
+  document.addEventListener('keydown',e=>{ if(e.ctrlKey&&['+','-','0','=','Add','Subtract'].includes(e.key)){ e.preventDefault();
+    e.key==='0'?bridge.resetScale():bridge.zoomStep(e.key==='-'||e.key==='Subtract'?-1:1); } });
+  $('gripHit').addEventListener('mousedown',e=>{ if(e.button!==0) return; e.stopPropagation(); e.preventDefault(); bridge.startResize(); });
+  $('gripHit').addEventListener('dblclick',e=>{ e.stopPropagation(); bridge.resetScale(); });
+  
+  document.querySelectorAll('.lang').forEach(b=>b.onclick=()=>{ applyLang(b.dataset.lang); bridge.setUi('lang',LANG); });
+  $('themeBtn').onclick=()=>{ const t=THEME==='night'?'day':'night'; applyTheme(t,true); bridge.setUi('theme',t); };
+  $('sortBtn').onclick=()=>{ SORT_HK=!SORT_HK; $('sortBtn').classList.toggle('on',SORT_HK); renderGrid(); bridge.setUi('sort_hotkeys',SORT_HK?'1':'0');
+    toast(T(SORT_HK?'sort_on':'sort_off')); };
+  $('minBtn').onclick=()=>bridge.minimize(); $('closeBtn').onclick=()=>bridge.hideWindow();
+  $('search').oninput=renderGrid;
+  document.querySelectorAll('.hk-row .key').forEach(k=>k.onclick=()=>openCapture(k.dataset.action));
+  $('menu').onclick=e=>{const m=e.target.closest('button')?.dataset.m;if(!m||!menuSid)return;const s=menuSid;closeMenu();
+    if(m==='play')bridge.play(s.id); if(m==='stop')bridge.stop(s.id);
+    if(m==='trim')openEditor(s);
+    if(m==='delete')askDelete(s);
+    if(m==='hotkey')openCapture('play:'+s.id,s.name); if(m==='unhotkey')bridge.setHotkey('play:'+s.id,'');};
+  $('capCancel').onclick=closeCapture;
+  $('delCancel').onclick=closeDelete;
+  $('delOk').onclick=()=>{ const s=delSid; closeDelete(); if(s){ if(ED.sid===s.id) closeEditor(); bridge.deleteSound(s.id); } };
+  $('capRemove').onclick=()=>{const a=capAction;closeCapture();bridge.setHotkey(a,'');toast(T('hk_removed'));};
+  document.addEventListener('mousedown',e=>{if(!e.target.closest('.menu'))closeMenu();});
+  document.addEventListener('keydown',e=>{
+    if(capAction) return onCaptureKey(e);
+    if(delSid){ if(e.key==='Escape') closeDelete(); if(e.key==='Enter') $('delOk').click(); return; }
+    if(ED.sid){ if(e.key==='Escape'){e.preventDefault();closeEditor();}
+      else if(e.code==='Space'&&e.target.tagName!=='INPUT'){e.preventDefault();ED.previewing?edStop():edPlay();} return; }
+    if(e.key==='Escape'){closeMenu(); if($('drawer').classList.contains('open')) openDrawer(false); else bridge.stop('');}
+  },true);
+  ['chassis','chassisN'].forEach(id=>$(id).addEventListener('mousedown',e=>{ if(e.button===0) bridge.startMove(); }));
+  document.querySelectorAll('.bezel,.tray,.well').forEach(el=>el.addEventListener('mousedown',e=>{
+    if(e.button===0&&!e.target.closest('button,input')) bridge.startMove(); }));
+  document.addEventListener('contextmenu',e=>{if(!e.target.closest('.snd'))e.preventDefault();});
+}
+
+
+/* ═════════ EDITOR DE RECORTE ═════════ */
+const ED={sid:null,name:'',dur:0,peaks:[],start:0,end:0,auto:[0,0],drag:null,playT0:0,playing:false,previewing:false};
+const fmt=t=>{t=Math.max(0,t);const m=Math.floor(t/60),sec=t-m*60;return String(m).padStart(2,'0')+':'+sec.toFixed(2).padStart(5,'0');};
+function openEditor(s){
+  openDrawer(false); closeMenu();
+  Object.assign(ED,{sid:s.id,name:s.name,peaks:[],dur:0,playing:false});
+  $('edName').textContent=segText(s.name); $('waveLoad').style.display='grid'; $('waveLoad').textContent=T('loading');
+  $('editor').classList.add('open');
+  bridge.getWaveform(s.id,j=>{
+    const w=JSON.parse(j); if(ED.sid!==s.id) return;
+    if(w.error){ $('waveLoad').textContent=T('unreadable'); return; }
+    Object.assign(ED,{dur:w.duration,peaks:w.peaks,start:w.start,end:w.end,auto:w.auto});
+    $('waveLoad').style.display='none'; edUpdate();
+  });
+}
+function closeEditor(){ if(!ED.sid) return; edStop(); ED.sid=null; $('editor').classList.remove('open'); }
+function edClamp(){
+  const minLen=0.02;
+  ED.start=Math.min(Math.max(0,ED.start),ED.dur-minLen);
+  ED.end=Math.max(Math.min(ED.dur,ED.end),ED.start+minLen);
+}
+function edUpdate(){
+  edClamp();
+  $('roStart').textContent=fmt(ED.start); $('roEnd').textContent=fmt(ED.end); $('roLen').textContent=fmt(ED.end-ED.start);
+  drawWave();
+}
+function drawWave(){
+  const cv=$('waveCv'), box=$('wave'), dpr=window.devicePixelRatio||1;
+  const W=box.clientWidth, H=box.clientHeight;
+  if(cv.width!==W*dpr||cv.height!==H*dpr){cv.width=W*dpr;cv.height=H*dpr;}
+  const c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,W,H);
+  if(!ED.dur) return;
+  const cs=getComputedStyle(document.documentElement), SEG=cs.getPropertyValue('--seg').trim(),
+        GHOST=cs.getPropertyValue('--seg-ghost').trim(), DIM=cs.getPropertyValue('--seg-dim').trim(), BG=cs.getPropertyValue('--lcd-bg1').trim(),
+        GLOW=cs.getPropertyValue('--seg-glow').trim();
+  c.shadowColor=GLOW; c.shadowBlur=THEME==='night'?6:0;
+  const padX=12, top=16, bot=H-16, mid=(top+bot)/2, half=(bot-top)/2, iw=W-padX*2;
+  const X=t=>padX+t/ED.dur*iw;
+  const step=[0.1,0.25,0.5,1,2,5,10,30,60].find(s=>ED.dur/s<=10)||120;
+  c.font='700 8.5px Segoe UI'; c.textBaseline='top';
+  for(let t=0;t<=ED.dur+1e-6;t+=step){
+    const x=Math.round(X(t))+.5; c.fillStyle=DIM;
+    for(let y=top;y<bot;y+=4) c.fillRect(x-.5,y,1,1.5);           // rejilla punteada, como el LCD
+    c.fillStyle=SEG; c.globalAlpha=.6; c.fillText((step<1?t.toFixed(2):t.toFixed(0))+'s',x+3,2); c.globalAlpha=1;
+  }
+  const xs=X(ED.start), xe=X(ED.end);
+  // barras: segmentos llenos dentro de la selección, fantasma fuera
+  const n=ED.peaks.length, cols=Math.floor(iw/4);
+  for(let i=0;i<cols;i++){
+    const a=Math.floor(i/cols*n), b=Math.max(a+1,Math.floor((i+1)/cols*n));
+    let p=0; for(let k=a;k<b;k++) p=Math.max(p,ED.peaks[k]||0);
+    const h=Math.max(1.5,p*half*.92), x=padX+i*4, t=(i+.5)/cols*ED.dur;
+    c.fillStyle=GHOST; c.fillRect(x,mid-half*.92,3,half*1.84);
+    c.fillStyle=(t>=ED.start&&t<=ED.end)?SEG:DIM;
+    c.fillRect(x,mid-h,3,h*2);
+  }
+  c.fillStyle=SEG; c.fillRect(padX,mid-.5,iw,1);
+  // tiradores IN / OUT (etiquetas invertidas, como los indicadores del reloj)
+  for(const [x,lbl] of [[xs,'IN'],[xe,'OUT']]){
+    c.fillStyle=SEG; c.fillRect(Math.round(x)-1,top-2,2,bot-top+4);
+    const tw=lbl==='IN'?20:28, tx=lbl==='IN'?x-1:x-tw+1;
+    roundRect(c,tx,bot+1,tw,12,3); c.fill();
+    c.fillStyle=BG; c.font='800 8px Segoe UI'; c.textBaseline='middle'; c.fillText(lbl,tx+(tw-c.measureText(lbl).width)/2,bot+7.5); c.textBaseline='top';
+  }
+  // cabezal
+  if(ED.playing){
+    const t=ED.start+(performance.now()-ED.playT0)/1000;
+    if(t>=ED.end||!ED.previewing&&performance.now()-ED.playT0>400){ ED.playing=false; $('edPlay').classList.remove('on'); $('edLcd').classList.remove('lit'); }
+    else{ const x=Math.round(X(t)); c.fillStyle=SEG; for(let y=top;y<bot;y+=6) c.fillRect(x,y,2,4);
+      c.beginPath(); c.moveTo(x-4,top-4); c.lineTo(x+6,top-4); c.lineTo(x+1,top+2); c.fill(); }
+  }
+}
+function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function edLoop(){ if(ED.sid&&ED.playing) drawWave(); requestAnimationFrame(edLoop); }
+function edTime(ev){ const r=$('wave').getBoundingClientRect(); return Math.min(ED.dur,Math.max(0,(ev.clientX-r.left-12)/(r.width-24)*ED.dur)); }
+function edPlay(){ if(!ED.dur) return; bridge.previewTrim(ED.sid,ED.start,ED.end); ED.playT0=performance.now(); ED.playing=true; $('edPlay').classList.add('on'); $('edLcd').classList.add('lit'); }
+function edStop(){ bridge.stopPreview(); ED.playing=false; $('edPlay').classList.remove('on'); $('edLcd').classList.remove('lit'); drawWave(); }
+function wireEditor(){
+  const wave=$('wave');
+  wave.addEventListener('mousedown',e=>{
+    if(!ED.dur) return; const t=edTime(e);
+    ED.drag=Math.abs(t-ED.start)<=Math.abs(t-ED.end)?'start':'end'; ED[ED.drag]=t; edUpdate();
+  });
+  window.addEventListener('mousemove',e=>{ if(ED.drag){ ED[ED.drag]=edTime(e); edUpdate(); } });
+  window.addEventListener('mouseup',()=>{ if(ED.drag){ ED.drag=null; if(ED.playing) edPlay(); } });
+  document.querySelectorAll('.nud button').forEach(b=>b.onclick=()=>{
+    const [w,sg]=[b.dataset.n[0]==='s'?'start':'end',b.dataset.n[1]==='+'?1:-1]; ED[w]+=sg*0.01; edUpdate(); });
+  $('edPlay').onclick=edPlay; $('edStop').onclick=edStop;
+  $('edAuto').onclick=()=>{ [ED.start,ED.end]=ED.auto; edUpdate(); toast(T('auto_done',{a:fmt(ED.auto[0]),b:fmt(ED.auto[1])})); };
+  $('edReset').onclick=()=>{ ED.start=0; ED.end=ED.dur; edUpdate(); };
+  $('edCancel').onclick=closeEditor;
+  $('edSave').onclick=()=>{ bridge.setTrim(ED.sid,ED.start,ED.end,ED.dur); toast(T('trim_saved')); closeEditor(); };
+  window.addEventListener('resize',()=>ED.sid&&drawWave());
+  edLoop();
+}
+
+function mockBridge(){
+  document.body.classList.add('preview');
+  const st={inputs:['Micrófono (Realtek(R) Audio)','CABLE Output (VB-Audio Virtual Cable)'],
+    outputs:['Altavoces (Realtek(R) Audio)','Auriculares (HyperX Cloud)','CABLE Input (VB-Audio Virtual Cable)'],
+    mic:'Micrófono (Realtek(R) Audio)',cable:'CABLE Input (VB-Audio Virtual Cable)',monitor:'Auriculares (HyperX Cloud)',
+    vol_mic:1,vol_call:.8,vol_me:.6,mic_muted:false,errors:{},ui:{lang:(navigator.language||'es').slice(0,2),theme:'day',sort_hotkeys:true},trims:{'Boing':[0.1,0.7]},hotkeys:{'play:Ding':'ctrl+alt+Digit1','play:Bocina':'Numpad1','play:Airhorn':'Numpad1','stop':'ctrl+alt+Digit0'},
+    sounds:((navigator.language||'es').startsWith('es')?['Bocina','Ding','Boing','Risas enlatadas','Redoble de tambor','Bruh','Aplausos','Grillos','Trombón triste','Wow']:['Airhorn','Ding','Boing','Laugh track','Drumroll','Bruh','Applause','Crickets','Sad trombone','Wow']).map(n=>({id:n,name:n}))};
+  const pl=new Set(['Ding']);
+  const b={setDevice:(k,v)=>{st[k]=v;render(st)},setVolume:(k,v)=>{st[k]=v},toggleMute:()=>{st.mic_muted=!st.mic_muted;render(st)},
+    play:id=>{pl.add(id);setTimeout(()=>pl.delete(id),2500)},stop:id=>{id?pl.delete(id):pl.clear()},
+    setHotkey:(a,c)=>{for(const[k,v]of Object.entries(st.hotkeys))if(v===c)delete st.hotkeys[k];c?st.hotkeys[a]=c:delete st.hotkeys[a];render(st)},
+    capturing:()=>{},addSounds:()=>toast('(vista previa)'),openFolder:()=>toast('(vista previa)'),refresh:()=>{},
+    minimize:()=>{},hideWindow:()=>{},startMove:()=>{},
+    getWaveform:(id,cb)=>{const n=900,pk=[];for(let i=0;i<n;i++){const t=i/n;pk.push(t<.12||t>.82?Math.random()*.015:Math.abs(Math.sin(t*40))*Math.exp(-(t-.12)*3)*.9+Math.random()*.08);}
+      setTimeout(()=>cb(JSON.stringify({duration:2.6,peaks:pk,start:0,end:2.6,auto:[0.29,2.21]})),200);},
+    previewTrim:(id,a,b)=>{pl.add('__preview__');setTimeout(()=>pl.delete('__preview__'),(b-a)*1000)},stopPreview:()=>pl.delete('__preview__'),
+    setUi:()=>{}, startResize:()=>{}, resetScale:()=>{}, zoomStep:()=>{},
+    deleteSound:id=>{st.sounds=st.sounds.filter(x=>x.id!==id);render(st);},
+    setTrim:(id,a,b,d)=>{st.trims=st.trims||{};st.trims[id]=[a,b];render(st)}};
+  setInterval(()=>onLevels(JSON.stringify({levels:{mic:Math.random()*.45,call:pl.size?.5+Math.random()*.3:.08,me:pl.size?.45+Math.random()*.2:0},playing:[...pl]})),90);
+  return [b,st];
+}
+
+window.addEventListener('load',()=>{
+  decorate(); tickClock();
+  if(window.qt&&window.QWebChannel){
+    new QWebChannel(qt.webChannelTransport,ch=>{
+      bridge=ch.objects.bridge;
+      bridge.stateChanged.connect(j=>render(JSON.parse(j)));
+      bridge.levels.connect(onLevels);
+      bridge.notice.connect(m=>toast(m));
+      bridge.scaleChanged.connect(v=>{ window._scale=v; $('scaleLbl').textContent=T('size')+' '+Math.round(v*100)+'%'; });
+      bridge.getScale(v=>{ window._scale=v; $('scaleLbl').textContent=T('size')+' '+Math.round(v*100)+'%'; });
+      wire(); wireEditor(); bridge.getState(j=>render(JSON.parse(j)));
+    });
+  } else { const [b,st]=mockBridge(); bridge=b; wire(); wireEditor(); render(st); }
+});
+</script>
+</body>
+</html>
