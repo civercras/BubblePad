@@ -16,7 +16,7 @@ STRINGS = {
         "no_mic": "No encuentro el micrófono «{name}»",
         "cant_read": "No puedo leer {name}: {err}",
         "no_cable_title": "Falta el micro virtual",
-        "no_cable": "No encuentro VB-CABLE. Instálalo gratis desde vb-audio.com/Cable, reinicia y vuelve a abrir Bubblepad.",
+        "no_cable": "Falta VB-CABLE, el micro virtual. Abre Bubblepad y pulsa «Instalar VB-CABLE».",
     },
     "en": {
         "tray_open": "Open Bubblepad",
@@ -33,7 +33,7 @@ STRINGS = {
         "no_mic": "Can't find the microphone “{name}”",
         "cant_read": "Can't read {name}: {err}",
         "no_cable_title": "Virtual mic missing",
-        "no_cable": "VB-CABLE wasn't found. Install it for free from vb-audio.com/Cable, restart and open Bubblepad again.",
+        "no_cable": "VB-CABLE (the virtual mic) is missing. Open Bubblepad and press “Install VB-CABLE”.",
     },
 }
 LANG = "es"

@@ -34,13 +34,14 @@ If you have ever searched for *"how to play sounds through my mic"*, *"soundboar
 - 🌙 **Day / night themes** with an animated sunset, Casio-style LCD with live meters
 - 🫧 Tray icon, mute button, stop-all, search, sort by hotkey, resizable window (80–120 %)
 - 🌍 English and Spanish
+- 🔌 One-click VB-CABLE setup if it's missing
 - 🛡 Auto-recovers if your headset sleeps or reconnects
 
 <p align="center"><img src="docs/trim.png" width="49%" alt="Trim editor with waveform"> <img src="docs/night.png" width="49%" alt="Night theme"></p>
 
 ### Install
-1. Install **[VB-CABLE](https://vb-audio.com/Cable/)** (free) and restart your PC.
-2. Download **Bubblepad-windows.zip** from [Releases](../../releases), unzip it anywhere and run **Bubblepad.exe**.
+1. Download **Bubblepad-windows.zip** from [Releases](../../releases), unzip it anywhere and run **Bubblepad.exe**.
+2. If you don't have **VB-CABLE** yet, Bubblepad offers to install it in one click (it downloads the official installer from [vb-audio.com](https://vb-audio.com/Cable/); press *Install Driver*) and then restart your PC.
 3. In **Discord** (or your game): *Settings → Voice → Input device* → **CABLE Output (VB-Audio Virtual Cable)**.
 4. In Discord, turn **off Noise Suppression and Echo Cancellation**, otherwise it treats your sounds as background noise and makes them sound distant.
 
@@ -77,8 +78,8 @@ Si alguna vez has buscado *"cómo poner sonidos por el micro en Discord"*, *"sou
 - 🌍 Español e inglés
 
 ### Instalación
-1. Instala **[VB-CABLE](https://vb-audio.com/Cable/)** (gratis) y reinicia.
-2. Descarga **Bubblepad-windows.zip** de [Releases](../../releases), descomprímelo y abre **Bubblepad.exe**.
+1. Descarga **Bubblepad-windows.zip** de [Releases](../../releases), descomprímelo y abre **Bubblepad.exe**.
+2. Si no tienes **VB-CABLE**, Bubblepad te lo instala con un clic (descarga el instalador oficial de [vb-audio.com](https://vb-audio.com/Cable/); pulsa *Install Driver*) y luego reinicia el PC.
 3. En **Discord** (o tu juego): *Ajustes → Voz y vídeo → Micrófono* → **CABLE Output (VB-Audio Virtual Cable)**.
 4. Desactiva en Discord la **supresión de ruido** y la **cancelación de eco**, o tratará tus sonidos como ruido.
 

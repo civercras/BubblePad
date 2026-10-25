@@ -16,6 +16,7 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMenu, QSystemTrayIcon, QWidget
 
 import config
+import vbcable
 import i18n
 from i18n import t
 from engine import AUDIO_EXT, Engine, default_devices, list_devices
@@ -89,6 +90,7 @@ class Bridge(QObject):
     levels = Signal(str)
     notice = Signal(str)
     scaleChanged = Signal(float)
+    cableProgress = Signal(str, int)
 
     def __init__(self, app):
         super().__init__()
@@ -173,6 +175,23 @@ class Bridge(QObject):
     @Slot()
     def resetScale(self):
         self.app.window.set_scale(1.0)
+
+    @Slot()
+    def installCable(self):
+        if sys.platform != "win32":
+            self.cableProgress.emit("error:Windows only", 0)
+            return
+        vbcable.install(lambda stage, pct: self.cableProgress.emit(stage, pct))
+
+    @Slot()
+    def openCableWeb(self):
+        import webbrowser
+        webbrowser.open(vbcable.WEB)
+
+    @Slot()
+    def restartPc(self):
+        if sys.platform == "win32":
+            os.system("shutdown /r /t 5")
 
     @Slot()
     def relaunchAdmin(self):
@@ -488,6 +507,7 @@ class BubblepadApp:
             "trims": self.cfg["trims"],
             "ui": self.cfg["ui"],
             "admin": is_admin(),
+            "cable_missing": not any("CABLE INPUT" in o.upper() for o in self.outputs),
         }
 
     def push_state(self):

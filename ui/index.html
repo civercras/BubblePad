@@ -374,6 +374,25 @@ select{width:100%;height:32px;padding:0 10px;border-radius:8px;border:1px solid 
 .snd .del:hover{background:linear-gradient(180deg,#ff8a80,#e0352c);color:#fff}
 .menu button.danger{color:#c62e26}
 .menu button.danger:hover{background:linear-gradient(180deg,#ff7d72,#d6352d);color:#fff}
+/* aviso para instalar VB-CABLE (dentro de la pantalla, bajo la cabecera) */
+.cablecard{position:absolute;left:12px;right:12px;top:76px;z-index:4;display:none;gap:16px;padding:18px 20px;border-radius:28px;
+  background:linear-gradient(180deg,rgba(255,255,255,.94),rgba(226,240,252,.92));box-shadow:0 10px 30px rgba(0,30,80,.4),inset 0 1px 0 #fff}
+.cablecard.show{display:flex}
+.cc-ico{flex:none;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:26px;
+  background:radial-gradient(circle at 40% 30%,#e9f8ff,#5fb9f2 60%,#1f7ad6);box-shadow:0 3px 8px rgba(0,40,100,.35),inset 0 -3px 6px rgba(0,40,100,.3)}
+.cc-body{flex:1;min-width:0}
+.cablecard h4{margin:2px 0 6px;font-size:15px}
+.cablecard p{margin:0 0 12px;font-size:12.5px;line-height:1.45;color:var(--ink-soft)}
+.cc-bar{display:none;position:relative;height:26px;border-radius:13px;overflow:hidden;margin-bottom:12px;
+  background:linear-gradient(180deg,var(--lcd-bg2),var(--lcd-bg1));box-shadow:inset 0 2px 4px rgba(0,0,0,.45)}
+.cc-bar.show{display:block}
+.cc-bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:repeating-linear-gradient(90deg,var(--seg) 0 6px,transparent 6px 8px);opacity:.55;transition:width .2s}
+.cc-bar span{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;color:var(--seg)}
+.cc-btns{display:flex;gap:8px;flex-wrap:wrap}
+.cc-btns .pill.go{color:#fff;background:linear-gradient(180deg,#5db8f5,#1f86d9);box-shadow:0 2px 0 #11558f,0 3px 5px rgba(0,25,70,.25),inset 0 1px 0 rgba(255,255,255,.5)}
+.night .cablecard{background:linear-gradient(180deg,#2a3242,#1b212d);color:#e6edf7}
+.night .cablecard p{color:#9fb0c8}
+.night .cc-btns .pill.go{color:#2a1500;background:linear-gradient(180deg,#ffbf6a,#f08a24);box-shadow:0 2px 0 #7a3f00}
 .orb .cut{position:absolute;right:4px;top:4px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;
   background:linear-gradient(180deg,#fff,#dce8f3);box-shadow:0 2px 4px rgba(0,40,90,.35);z-index:1}
 
@@ -488,6 +507,15 @@ select{width:100%;height:32px;padding:0 10px;border-radius:8px;border:1px solid 
     <button class="wbtn x" id="closeBtn" data-i18n-title="hide_tray" title="Esconder en la bandeja">×</button>
   </div>
   <div class="grid" id="grid"></div>
+  <section class="cablecard" id="cableCard">
+    <div class="cc-ico">🔌</div>
+    <div class="cc-body">
+      <h4 data-i18n="cc_title">Falta el micro virtual</h4>
+      <p id="ccText"></p>
+      <div class="cc-bar" id="ccBar"><i id="ccFill"></i><span class="seg14" id="ccStage"></span></div>
+      <div class="cc-btns" id="ccBtns"></div>
+    </div>
+  </section>
 
 
   <section class="editor" id="editor">
@@ -616,7 +644,7 @@ function decorate(){
 
 /* ═════════ IDIOMAS ═════════ */
 const I18N={
- es:{games_title:'JUEGOS',games_help:'Si un juego se abre como administrador (p. ej. League of Legends), Windows no deja que los atajos lleguen a Bubblepad si no tiene también permisos de administrador.',admin_btn:'Reiniciar como administrador',admin_on:'✓ Funcionando como administrador',admin_start:'Abrir siempre como administrador',vu_me:'YO',idle:'SILENCIO',add:'Añadir sonidos',folder:'Carpeta de sonidos',refresh:'Actualizar dispositivos y sonidos',settings:'Audio, atajos e idioma',
+ es:{cc_title:'Falta el micro virtual',cc_title_ok:'VB-CABLE instalado',cc_text:'Bubblepad necesita <b>VB-CABLE</b> (gratis, de VB-Audio) para que Discord y los juegos oigan tus sonidos. Se descarga de su web oficial y se abre su instalador: ahí pulsa <b>Install Driver</b>.',cc_install:'Instalar VB-CABLE',cc_web:'Web oficial',cc_dl:'DESCARGANDO {p}%',cc_ex:'PREPARANDO',cc_inst:'INSTALADOR ABIERTO',cc_inst_text:'Se ha abierto el instalador de VB-CABLE. Acepta el aviso de Windows y pulsa <b>Install Driver</b>.',cc_done:'¡Instalado! Reinicia el PC para terminar; después Bubblepad lo usará solo.',cc_restart:'Reiniciar ahora',cc_later:'Más tarde',cc_cancel:'Instalación cancelada. Puedes volver a intentarlo cuando quieras.',cc_err:'No se ha podido descargar ({e}). Prueba desde la web oficial.',cc_retry:'Reintentar',cc_hide:'Ocultar',games_title:'JUEGOS',games_help:'Si un juego se abre como administrador (p. ej. League of Legends), Windows no deja que los atajos lleguen a Bubblepad si no tiene también permisos de administrador.',admin_btn:'Reiniciar como administrador',admin_on:'✓ Funcionando como administrador',admin_start:'Abrir siempre como administrador',vu_me:'YO',idle:'SILENCIO',add:'Añadir sonidos',folder:'Carpeta de sonidos',refresh:'Actualizar dispositivos y sonidos',settings:'Audio, atajos e idioma',
   your_voice:'Tu voz',sounds_call:'Sonidos en llamada',sounds_me:'Sonidos para mí',stop_all_esc:'Parar todos los sonidos (Esc)',stop_all_short:'Parar todo',
   mute_tip:'Activar / silenciar tu micrófono',sounds_title:'SONIDOS',search:'Buscar…',sort_tip:'Sonidos con atajo primero',theme_tip:'Día / noche',
   minimize:'Minimizar',hide_tray:'Esconder en la bandeja',ed_play:'Escuchar la selección en tus cascos (Espacio)',ed_stop:'Parar',
@@ -635,7 +663,7 @@ const I18N={
   del_q:'¿Eliminar «{n}»?',loading:'CARGANDO',unreadable:'NO SE PUEDE LEER',auto_done:'Silencios quitados: {a} → {b}',
   trim_saved:'Recorte guardado (el archivo original no se toca)',size:'TAMAÑO',grip:'Arrastra para cambiar el tamaño · doble clic: 100% · también Ctrl + rueda',
   keys:{ctrl:'Ctrl',alt:'Alt',shift:'Mayús',win:'Win',Space:'Espacio',Enter:'Intro',Backspace:'Retroceso',Delete:'Supr',Home:'Inicio',End:'Fin',PageUp:'RePág',PageDown:'AvPág',Pause:'Pausa',ScrollLock:'BloqDespl',PrintScreen:'ImprPant'}},
- en:{games_title:'GAMES',games_help:'If a game runs as administrator (e.g. League of Legends), Windows won\'t pass your keystrokes to Bubblepad unless it has administrator rights too.',admin_btn:'Restart as administrator',admin_on:'✓ Running as administrator',admin_start:'Always open as administrator',vu_me:'ME',idle:'IDLE',add:'Add sounds',folder:'Sounds folder',refresh:'Refresh devices and sounds',settings:'Audio, hotkeys & language',
+ en:{cc_title:'Virtual mic missing',cc_title_ok:'VB-CABLE installed',cc_text:'Bubblepad needs <b>VB-CABLE</b> (free, by VB-Audio) so Discord and games can hear your sounds. It downloads from the official site and opens its installer: there, press <b>Install Driver</b>.',cc_install:'Install VB-CABLE',cc_web:'Official site',cc_dl:'DOWNLOADING {p}%',cc_ex:'PREPARING',cc_inst:'INSTALLER OPEN',cc_inst_text:'The VB-CABLE installer is open. Accept the Windows prompt and press <b>Install Driver</b>.',cc_done:'Installed! Restart your PC to finish; after that Bubblepad will use it automatically.',cc_restart:'Restart now',cc_later:'Later',cc_cancel:'Installation cancelled. You can try again any time.',cc_err:'Download failed ({e}). Try the official site.',cc_retry:'Retry',cc_hide:'Hide',games_title:'GAMES',games_help:'If a game runs as administrator (e.g. League of Legends), Windows won\'t pass your keystrokes to Bubblepad unless it has administrator rights too.',admin_btn:'Restart as administrator',admin_on:'✓ Running as administrator',admin_start:'Always open as administrator',vu_me:'ME',idle:'IDLE',add:'Add sounds',folder:'Sounds folder',refresh:'Refresh devices and sounds',settings:'Audio, hotkeys & language',
   your_voice:'Your voice',sounds_call:'Sounds in call',sounds_me:'Sounds for me',stop_all_esc:'Stop all sounds (Esc)',stop_all_short:'Stop all',
   mute_tip:'Mute / unmute your microphone',sounds_title:'SOUNDS',search:'Search…',sort_tip:'Sounds with hotkeys first',theme_tip:'Day / night',
   minimize:'Minimize',hide_tray:'Hide to tray',ed_play:'Preview the selection in your headphones (Space)',ed_stop:'Stop',
@@ -721,7 +749,8 @@ function render(state){
   document.querySelectorAll('.hk-row .key').forEach(k=>{const c=S.hotkeys[k.dataset.action];k.textContent=c?label(c):T('assign');});
   $('adminBtn').textContent=T(S.admin?'admin_on':'admin_btn'); $('adminBtn').disabled=!!S.admin; $('adminBtn').classList.toggle('on',!!S.admin);
   $('adminStart').checked=!!ui.admin_on_start;
-  if(!ok) openDrawer(true);
+  if(!ok && !S.cable_missing) openDrawer(true);
+  renderCable();
   renderGrid();
 }
 /* rasgos deterministas por sonido: la misma burbuja siempre se ve igual */
@@ -732,6 +761,34 @@ function traits(id){
   const [t,th]=TINTS[Math.floor(r()*TINTS.length)];
   return {'--sz':(0.9+r()*0.18).toFixed(3),'--tint':t,'--tint-hi':th,'--tilt':(-26+r()*24).toFixed(1)+'deg','--hlx':(14+r()*14).toFixed(1)+'%',
     '--rx':(40+r()*20).toFixed(1)+'%','--bob':(3.6+r()*3).toFixed(2)+'s','--dl':(-r()*6).toFixed(2)+'s','--amp':(-(3+r()*4)).toFixed(1)+'px','--oy':(r()*8).toFixed(1)+'px'};
+}
+/* ── tarjeta de VB-CABLE ── */
+let ccState='idle', ccHidden=false;
+function ccButtons(list){ $('ccBtns').innerHTML=''; for(const [k,cls,fn] of list){ const b=document.createElement('button'); b.className='pill '+cls; b.textContent=T(k); b.onclick=fn; $('ccBtns').appendChild(b);} }
+function renderCable(){
+  const card=$('cableCard'), show=!ccHidden && (S?.cable_missing || ['busy','done','cancelled','error'].includes(ccState));
+  card.classList.toggle('show',!!show); if(!show) return;
+  const bar=$('ccBar');
+  $('cableCard').querySelector('h4').textContent=T(ccState==='done'?'cc_title_ok':'cc_title');
+  if(ccState==='idle'){ $('ccText').innerHTML=T('cc_text'); bar.classList.remove('show');
+    ccButtons([['cc_install','go',ccInstall],['cc_web','',()=>bridge.openCableWeb()]]); }
+  else if(ccState==='busy'){ bar.classList.add('show'); ccButtons([]); }
+  else if(ccState==='done'){ $('ccText').innerHTML=T('cc_done'); bar.classList.remove('show');
+    ccButtons([['cc_restart','go',()=>bridge.restartPc()],['cc_later','',()=>{ccHidden=true;renderCable();}]]); }
+  else if(ccState==='cancelled'){ $('ccText').innerHTML=T('cc_cancel'); bar.classList.remove('show');
+    ccButtons([['cc_retry','go',ccInstall],['cc_hide','',()=>{ccHidden=true;renderCable();}]]); }
+  else if(ccState==='error'){ $('ccText').innerHTML=T('cc_err',{e:ccErr}); bar.classList.remove('show');
+    ccButtons([['cc_web','go',()=>bridge.openCableWeb()],['cc_retry','',ccInstall]]); }
+}
+let ccErr='';
+function ccInstall(){ ccState='busy'; ccHidden=false; $('ccText').innerHTML=T('cc_text'); onCableProgress('download',0); renderCable(); bridge.installCable(); }
+function onCableProgress(stage,pct){
+  if(stage.startsWith('error:')){ ccState='error'; ccErr=stage.slice(6); renderCable(); return; }
+  if(stage==='done'||stage==='cancelled'){ ccState=stage; renderCable(); return; }
+  ccState='busy'; $('ccBar').classList.add('show');
+  $('ccFill').style.width=(stage==='download'?pct:100)+'%';
+  $('ccStage').textContent=stage==='download'?T('cc_dl',{p:pct}):stage==='extract'?T('cc_ex'):T('cc_inst');
+  if(stage==='installer') $('ccText').innerHTML=T('cc_inst_text');
 }
 function renderGrid(){
   const g=$('grid'),q=$('search').value.trim().toLowerCase(); g.innerHTML='';
@@ -986,7 +1043,7 @@ function mockBridge(){
   const st={inputs:['Micrófono (Realtek(R) Audio)','CABLE Output (VB-Audio Virtual Cable)'],
     outputs:['Altavoces (Realtek(R) Audio)','Auriculares (HyperX Cloud)','CABLE Input (VB-Audio Virtual Cable)'],
     mic:'Micrófono (Realtek(R) Audio)',cable:'CABLE Input (VB-Audio Virtual Cable)',monitor:'Auriculares (HyperX Cloud)',
-    vol_mic:1,vol_call:.8,vol_me:.6,mic_muted:false,errors:{},ui:{lang:(navigator.language||'es').slice(0,2),theme:'day',sort_hotkeys:true},trims:{'Boing':[0.1,0.7]},hotkeys:{'play:Ding':'ctrl+alt+Digit1','play:Bocina':'Numpad1','play:Airhorn':'Numpad1','stop':'ctrl+alt+Digit0'},
+    vol_mic:1,vol_call:.8,vol_me:.6,mic_muted:false,errors:{},cable_missing:location.hash==='#nocable',ui:{lang:(navigator.language||'es').slice(0,2),theme:'day',sort_hotkeys:true},trims:{'Boing':[0.1,0.7]},hotkeys:{'play:Ding':'ctrl+alt+Digit1','play:Bocina':'Numpad1','play:Airhorn':'Numpad1','stop':'ctrl+alt+Digit0'},
     sounds:((navigator.language||'es').startsWith('es')?['Bocina','Ding','Boing','Risas enlatadas','Redoble de tambor','Bruh','Aplausos','Grillos','Trombón triste','Wow']:['Airhorn','Ding','Boing','Laugh track','Drumroll','Bruh','Applause','Crickets','Sad trombone','Wow']).map(n=>({id:n,name:n}))};
   const pl=new Set(['Ding']);
   const b={setDevice:(k,v)=>{st[k]=v;render(st)},setVolume:(k,v)=>{st[k]=v},toggleMute:()=>{st.mic_muted=!st.mic_muted;render(st)},
@@ -997,7 +1054,7 @@ function mockBridge(){
     getWaveform:(id,cb)=>{const n=900,pk=[];for(let i=0;i<n;i++){const t=i/n;pk.push(t<.12||t>.82?Math.random()*.015:Math.abs(Math.sin(t*40))*Math.exp(-(t-.12)*3)*.9+Math.random()*.08);}
       setTimeout(()=>cb(JSON.stringify({duration:2.6,peaks:pk,start:0,end:2.6,auto:[0.29,2.21]})),200);},
     previewTrim:(id,a,b)=>{pl.add('__preview__');setTimeout(()=>pl.delete('__preview__'),(b-a)*1000)},stopPreview:()=>pl.delete('__preview__'),
-    setUi:()=>{}, relaunchAdmin:()=>toast('(preview)'), startResize:()=>{}, resetScale:()=>{}, zoomStep:()=>{},
+    installCable:()=>{let p=0;const iv=setInterval(()=>{p+=20;onCableProgress('download',Math.min(p,100));if(p>=120){clearInterval(iv);onCableProgress('installer',100);setTimeout(()=>onCableProgress('done',100),1500);}},300);}, openCableWeb:()=>{}, restartPc:()=>{}, setUi:()=>{}, relaunchAdmin:()=>toast('(preview)'), startResize:()=>{}, resetScale:()=>{}, zoomStep:()=>{},
     deleteSound:id=>{st.sounds=st.sounds.filter(x=>x.id!==id);render(st);},
     setTrim:(id,a,b,d)=>{st.trims=st.trims||{};st.trims[id]=[a,b];render(st)}};
   setInterval(()=>onLevels(JSON.stringify({levels:{mic:Math.random()*.45,call:pl.size?.5+Math.random()*.3:.08,me:pl.size?.45+Math.random()*.2:0},playing:[...pl]})),90);
@@ -1012,6 +1069,7 @@ window.addEventListener('load',()=>{
       bridge.stateChanged.connect(j=>render(JSON.parse(j)));
       bridge.levels.connect(onLevels);
       bridge.notice.connect(m=>toast(m));
+      bridge.cableProgress.connect(onCableProgress);
       bridge.scaleChanged.connect(v=>{ window._scale=v; $('scaleLbl').textContent=T('size')+' '+Math.round(v*100)+'%'; });
       bridge.getScale(v=>{ window._scale=v; $('scaleLbl').textContent=T('size')+' '+Math.round(v*100)+'%'; });
       wire(); wireEditor(); smoothScroll($('grid')); smoothScroll($('drawer')); bridge.getState(j=>render(JSON.parse(j)));
