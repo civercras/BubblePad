@@ -303,6 +303,13 @@ select{width:100%;height:32px;padding:0 10px;border-radius:8px;border:1px solid 
 .hk-row>span:first-child{flex:1;font-weight:600}
 .hk-row .key{cursor:pointer;opacity:1}
 .langs{display:flex;gap:8px;padding:8px}
+.small{font-size:12px;line-height:1.4;color:var(--ink-soft);margin-bottom:10px}
+.adminbtn{width:100%;flex:none}
+.adminbtn:disabled{cursor:default;opacity:1}
+.chk{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;font-weight:600;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:#1f86d9}
+.night .small{color:#9fb0c8}
+.night .chk input{accent-color:#f08a24}
 .lang{flex:1;height:32px;border-radius:8px;border:none;cursor:pointer;font:700 12.5px "Segoe UI";color:var(--ink-soft);
   background:linear-gradient(180deg,#f4f8fc,#dfe9f3);box-shadow:0 2px 0 #9fb2c6,inset 0 1px 0 #fff}
 .lang.on{color:#fff;background:linear-gradient(180deg,#5db8f5,#1f86d9);box-shadow:0 2px 0 #11558f,inset 0 1px 0 rgba(255,255,255,.5)}
@@ -523,6 +530,12 @@ select{width:100%;height:32px;padding:0 10px;border-radius:8px;border:1px solid 
       <div class="hk-row"><span data-i18n="stop_all">Parar todos los sonidos</span><span class="key" data-action="stop"></span></div>
       <div class="hk-row"><span data-i18n="mute_toggle">Silenciar / activar micro</span><span class="key" data-action="mute"></span></div>
     </div>
+    <h3 data-i18n="games_title">JUEGOS</h3>
+    <div class="blk">
+      <div class="small" data-i18n="games_help"></div>
+      <button class="lang adminbtn" id="adminBtn"></button>
+      <label class="chk"><input type="checkbox" id="adminStart"><span data-i18n="admin_start"></span></label>
+    </div>
     <h3 data-i18n="lang_title">IDIOMA</h3>
     <div class="blk langs"><button class="lang" data-lang="es">Español</button><button class="lang" data-lang="en">English</button></div>
     <div class="tip" data-i18n-html="tip">Los atajos funcionan con la ventana minimizada o escondida.
@@ -596,7 +609,7 @@ function decorate(){
 
 /* ═════════ IDIOMAS ═════════ */
 const I18N={
- es:{vu_me:'YO',idle:'SILENCIO',add:'Añadir sonidos',folder:'Carpeta de sonidos',refresh:'Actualizar dispositivos y sonidos',settings:'Audio, atajos e idioma',
+ es:{games_title:'JUEGOS',games_help:'Si un juego se abre como administrador (p. ej. League of Legends), Windows no deja que los atajos lleguen a Bubblepad si no tiene también permisos de administrador.',admin_btn:'Reiniciar como administrador',admin_on:'✓ Funcionando como administrador',admin_start:'Abrir siempre como administrador',vu_me:'YO',idle:'SILENCIO',add:'Añadir sonidos',folder:'Carpeta de sonidos',refresh:'Actualizar dispositivos y sonidos',settings:'Audio, atajos e idioma',
   your_voice:'Tu voz',sounds_call:'Sonidos en llamada',sounds_me:'Sonidos para mí',stop_all_esc:'Parar todos los sonidos (Esc)',stop_all_short:'Parar todo',
   mute_tip:'Activar / silenciar tu micrófono',sounds_title:'SONIDOS',search:'Buscar…',sort_tip:'Sonidos con atajo primero',theme_tip:'Día / noche',
   minimize:'Minimizar',hide_tray:'Esconder en la bandeja',ed_play:'Escuchar la selección en tus cascos (Espacio)',ed_stop:'Parar',
@@ -615,7 +628,7 @@ const I18N={
   del_q:'¿Eliminar «{n}»?',loading:'CARGANDO',unreadable:'NO SE PUEDE LEER',auto_done:'Silencios quitados: {a} → {b}',
   trim_saved:'Recorte guardado (el archivo original no se toca)',size:'TAMAÑO',grip:'Arrastra para cambiar el tamaño · doble clic: 100% · también Ctrl + rueda',
   keys:{ctrl:'Ctrl',alt:'Alt',shift:'Mayús',win:'Win',Space:'Espacio',Enter:'Intro',Backspace:'Retroceso',Delete:'Supr',Home:'Inicio',End:'Fin',PageUp:'RePág',PageDown:'AvPág',Pause:'Pausa',ScrollLock:'BloqDespl',PrintScreen:'ImprPant'}},
- en:{vu_me:'ME',idle:'IDLE',add:'Add sounds',folder:'Sounds folder',refresh:'Refresh devices and sounds',settings:'Audio, hotkeys & language',
+ en:{games_title:'GAMES',games_help:'If a game runs as administrator (e.g. League of Legends), Windows won\'t pass your keystrokes to Bubblepad unless it has administrator rights too.',admin_btn:'Restart as administrator',admin_on:'✓ Running as administrator',admin_start:'Always open as administrator',vu_me:'ME',idle:'IDLE',add:'Add sounds',folder:'Sounds folder',refresh:'Refresh devices and sounds',settings:'Audio, hotkeys & language',
   your_voice:'Your voice',sounds_call:'Sounds in call',sounds_me:'Sounds for me',stop_all_esc:'Stop all sounds (Esc)',stop_all_short:'Stop all',
   mute_tip:'Mute / unmute your microphone',sounds_title:'SOUNDS',search:'Search…',sort_tip:'Sounds with hotkeys first',theme_tip:'Day / night',
   minimize:'Minimize',hide_tray:'Hide to tray',ed_play:'Preview the selection in your headphones (Space)',ed_stop:'Stop',
@@ -699,6 +712,8 @@ function render(state){
   const ok=S.cable&&!(S.errors||{}).cable;
   $('lcdMic').textContent=!ok?'CABL':S.mic_muted?'OFF':'ON';
   document.querySelectorAll('.hk-row .key').forEach(k=>{const c=S.hotkeys[k.dataset.action];k.textContent=c?label(c):T('assign');});
+  $('adminBtn').textContent=T(S.admin?'admin_on':'admin_btn'); $('adminBtn').disabled=!!S.admin; $('adminBtn').classList.toggle('on',!!S.admin);
+  $('adminStart').checked=!!ui.admin_on_start;
   if(!ok) openDrawer(true);
   renderGrid();
 }
@@ -805,6 +820,8 @@ function wire(){
   $('gripHit').addEventListener('dblclick',e=>{ e.stopPropagation(); bridge.resetScale(); });
   
   document.querySelectorAll('.lang').forEach(b=>b.onclick=()=>{ applyLang(b.dataset.lang); bridge.setUi('lang',LANG); });
+  $('adminBtn').onclick=()=>bridge.relaunchAdmin();
+  $('adminStart').onchange=e=>bridge.setUi('admin_on_start',e.target.checked?'1':'0');
   $('themeBtn').onclick=()=>{ const t=THEME==='night'?'day':'night'; applyTheme(t,true); bridge.setUi('theme',t); };
   $('sortBtn').onclick=()=>{ SORT_HK=!SORT_HK; $('sortBtn').classList.toggle('on',SORT_HK); renderGrid(); bridge.setUi('sort_hotkeys',SORT_HK?'1':'0');
     toast(T(SORT_HK?'sort_on':'sort_off')); };
@@ -947,7 +964,7 @@ function mockBridge(){
     getWaveform:(id,cb)=>{const n=900,pk=[];for(let i=0;i<n;i++){const t=i/n;pk.push(t<.12||t>.82?Math.random()*.015:Math.abs(Math.sin(t*40))*Math.exp(-(t-.12)*3)*.9+Math.random()*.08);}
       setTimeout(()=>cb(JSON.stringify({duration:2.6,peaks:pk,start:0,end:2.6,auto:[0.29,2.21]})),200);},
     previewTrim:(id,a,b)=>{pl.add('__preview__');setTimeout(()=>pl.delete('__preview__'),(b-a)*1000)},stopPreview:()=>pl.delete('__preview__'),
-    setUi:()=>{}, startResize:()=>{}, resetScale:()=>{}, zoomStep:()=>{},
+    setUi:()=>{}, relaunchAdmin:()=>toast('(preview)'), startResize:()=>{}, resetScale:()=>{}, zoomStep:()=>{},
     deleteSound:id=>{st.sounds=st.sounds.filter(x=>x.id!==id);render(st);},
     setTrim:(id,a,b,d)=>{st.trims=st.trims||{};st.trims[id]=[a,b];render(st)}};
   setInterval(()=>onLevels(JSON.stringify({levels:{mic:Math.random()*.45,call:pl.size?.5+Math.random()*.3:.08,me:pl.size?.45+Math.random()*.2:0},playing:[...pl]})),90);
@@ -955,7 +972,7 @@ function mockBridge(){
 }
 
 window.addEventListener('load',()=>{
-  decorate(); tickClock();
+  decorate(); tickClock(); applyLang(LANG);
   if(window.qt&&window.QWebChannel){
     new QWebChannel(qt.webChannelTransport,ch=>{
       bridge=ch.objects.bridge;

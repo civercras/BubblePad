@@ -6,7 +6,7 @@ import shutil
 import sys
 import traceback
 
-from PySide6.QtCore import QObject, QTimer, QUrl, Signal, Slot, Qt
+from PySide6.QtCore import QObject, QThread, QTimer, QUrl, Signal, Slot, Qt
 from PySide6.QtGui import QCursor, QGuiApplication
 from PySide6.QtGui import QAction, QColor, QIcon, QPixmap
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
@@ -36,6 +36,37 @@ def log_error(msg):
 
 
 ICON_PATH = os.path.join(config.RES, "assets", "bubblepad.png")
+
+
+# ── permisos de administrador ──
+# Si un juego corre como administrador (p. ej. League of Legends con Vanguard), Windows no deja que
+# las pulsaciones hechas en él lleguen a programas normales: los atajos solo funcionan si Bubblepad
+# también es administrador.
+def is_admin():
+    if sys.platform != "win32":
+        return False
+    try:
+        import ctypes
+        return bool(ctypes.windll.shell32.IsUserAnAdmin())
+    except Exception:
+        return False
+
+
+def launch_elevated():
+    """Abre otra copia de Bubblepad como administrador (aparece el aviso de Windows). True si se lanzó."""
+    if sys.platform != "win32":
+        return False
+    import ctypes
+    if config.FROZEN:
+        exe, args = sys.executable, "--relaunch"
+    else:
+        exe = sys.executable
+        pyw = os.path.join(os.path.dirname(exe), "pythonw.exe")
+        if os.path.exists(pyw):
+            exe = pyw
+        args = f'"{os.path.abspath(__file__)}" --relaunch'
+    r = ctypes.windll.shell32.ShellExecuteW(None, "runas", exe, args, config.BASE, 1)
+    return r > 32
 
 
 def bubble_icon(muted=False):
@@ -122,6 +153,8 @@ class Bridge(QObject):
             ui["theme"] = "night" if value == "night" else "day"
         elif key == "sort_hotkeys":
             ui["sort_hotkeys"] = value == "1"
+        elif key == "admin_on_start":
+            ui["admin_on_start"] = value == "1"
         elif key == "lang":
             ui["lang"] = value if value in ("es", "en") else "en"
             self.app.set_lang(ui["lang"])
@@ -140,6 +173,13 @@ class Bridge(QObject):
     @Slot()
     def resetScale(self):
         self.app.window.set_scale(1.0)
+
+    @Slot()
+    def relaunchAdmin(self):
+        if launch_elevated():
+            self.app.quit()
+        else:
+            self.notice.emit(t("admin_cancel"))
 
     @Slot()
     def startResize(self):
@@ -447,6 +487,7 @@ class BubblepadApp:
             "hotkeys": self.cfg["hotkeys"],
             "trims": self.cfg["trims"],
             "ui": self.cfg["ui"],
+            "admin": is_admin(),
         }
 
     def push_state(self):
@@ -561,6 +602,20 @@ def main():
     qapp.setQuitOnLastWindowClosed(False)
     qapp.setApplicationName("Bubblepad")
 
+    # "Abrir siempre como administrador": si toca y aún no lo somos, nos relanzamos elevados
+    if "--relaunch" not in sys.argv and not is_admin() and config.load()["ui"].get("admin_on_start"):
+        if launch_elevated():
+            return
+    # Al relanzar, esperamos a que la copia anterior termine de cerrarse
+    if "--relaunch" in sys.argv:
+        for _ in range(40):
+            probe = QLocalSocket()
+            probe.connectToServer(APP_ID)
+            if not probe.waitForConnected(100):
+                break
+            probe.abort()
+            QThread.msleep(150)
+
     # Una sola copia abierta: si ya está, le pedimos que muestre el panel
     sock = QLocalSocket()
     sock.connectToServer(APP_ID)
@@ -571,6 +626,7 @@ def main():
         return
     QLocalServer.removeServer(APP_ID)
     server = QLocalServer()
+    server.setSocketOptions(QLocalServer.WorldAccessOption)   # visible aunque una copia sea admin y otra no
     server.listen(APP_ID)
 
     try:

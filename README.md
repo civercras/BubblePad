@@ -54,7 +54,8 @@ Built with Python, PySide6 (Qt WebEngine for the UI), sounddevice/PortAudio (WAS
 ### FAQ
 - **People hear my sounds but I don't** → check "I listen on" in ⚙ and the *Sounds for me* slider.
 - **Sounds play but nobody hears them** → Discord's input must be *CABLE Output*, and noise suppression off.
-- **A hotkey doesn't work** → another app already uses that combination; Bubblepad will tell you.
+- **Hotkeys don't work inside a game (e.g. League of Legends)** → the game runs as administrator, so Windows blocks its keystrokes from reaching normal apps. In ⚙ → *Games*, press **Restart as administrator** (or tick *Always open as administrator*).
+- **A hotkey doesn't work anywhere** → another app already uses that combination; Bubblepad will tell you.
 
 ---
 
@@ -80,6 +81,8 @@ Si alguna vez has buscado *"cómo poner sonidos por el micro en Discord"*, *"sou
 2. Descarga **Bubblepad-windows.zip** de [Releases](../../releases), descomprímelo y abre **Bubblepad.exe**.
 3. En **Discord** (o tu juego): *Ajustes → Voz y vídeo → Micrófono* → **CABLE Output (VB-Audio Virtual Cable)**.
 4. Desactiva en Discord la **supresión de ruido** y la **cancelación de eco**, o tratará tus sonidos como ruido.
+
+**¿Los atajos no funcionan dentro de un juego (p. ej. LoL)?** El juego se abre como administrador y Windows no deja pasar sus pulsaciones. En ⚙ → *Juegos* pulsa **Reiniciar como administrador**.
 
 ### Desde el código
 Con Python 3.11+ en Windows: doble clic en **`Iniciar Bubblepad.bat`**. Para crear el `.exe`: **`Compilar exe.bat`**.
