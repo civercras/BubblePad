@@ -1,11 +1,17 @@
 name: Build Windows release
 
-# Cada vez que se sube una etiqueta vX.Y.Z, GitHub compila Bubblepad.exe en Windows
-# y lo publica en Releases como Bubblepad-windows.zip
+# GitHub compila Bubblepad.exe en Windows y lo publica en Releases como Bubblepad-windows.zip.
+# Se lanza desde Actions → "Build Windows release" → Run workflow (escribiendo la versión, p. ej. v0.1.2),
+# o subiendo una etiqueta vX.Y.Z.
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Versión a publicar (p. ej. v0.1.2). Vacío = solo compilar"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -42,10 +48,12 @@ jobs:
           path: Bubblepad-windows.zip
 
       - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || inputs.version != ''
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.version || github.ref_name }}
+          target_commitish: ${{ github.sha }}
           files: Bubblepad-windows.zip
-          name: Bubblepad ${{ github.ref_name }} (early access)
+          name: Bubblepad ${{ inputs.version || github.ref_name }} (early access)
           body_path: docs/RELEASE_NOTES.md
           prerelease: true
