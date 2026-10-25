@@ -251,18 +251,25 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;heigh
   box-shadow:0 0 10px rgba(220,230,255,.7),inset -7px -3px 0 rgba(130,140,170,.55)}
 
 .grid{position:absolute;left:12px;right:12px;top:76px;bottom:12px;overflow:auto;z-index:2;
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:12px 10px;align-content:start;padding:8px 10px 20px}
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:12px 10px;align-content:start;padding:10px 10px 24px;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 12px,#000 calc(100% - 20px),transparent 100%);
+  mask-image:linear-gradient(180deg,transparent 0,#000 12px,#000 calc(100% - 20px),transparent 100%)}
 .grid::-webkit-scrollbar{width:10px}
 .grid::-webkit-scrollbar-thumb{border-radius:8px;background:rgba(255,255,255,.6);border:2px solid transparent;background-clip:padding-box}
 .snd{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:4px}
-.orb{position:relative;width:100px;height:100px;border-radius:50%;transition:transform .2s cubic-bezier(.3,1.7,.5,1);filter:brightness(var(--orb-b));
+/* cada burbuja tiene su propia personalidad (tamaño, tinte, brillo, flotación) calculada a partir de su nombre */
+.orb{position:relative;width:calc(100px * var(--sz,1));height:calc(100px * var(--sz,1));margin-top:var(--oy,0px);border-radius:50%;
+  transition:transform .2s cubic-bezier(.3,1.7,.5,1);filter:brightness(var(--orb-b));
+  animation:bob var(--bob,5s) ease-in-out var(--dl,0s) infinite alternate;will-change:transform,translate;
   background:
-    radial-gradient(circle at 50% 80%,rgba(225,248,255,.95) 0%,rgba(130,210,255,.6) 30%,rgba(255,255,255,0) 50%),
-    linear-gradient(180deg,rgba(70,175,45,.55) 0%,rgba(150,225,100,.3) 45%,rgba(120,205,255,.45) 58%,rgba(25,105,200,.65) 100%);
+    radial-gradient(circle at var(--rx,50%) 80%,rgba(225,248,255,.95) 0%,rgba(130,210,255,.6) 30%,rgba(255,255,255,0) 50%),
+    linear-gradient(180deg,rgba(70,175,45,.55) 0%,rgba(150,225,100,.3) 45%,rgba(var(--tint-hi,120,205,255),.45) 58%,rgba(var(--tint,25,105,200),.65) 100%);
   border:1px solid rgba(255,255,255,.75);
   box-shadow:inset 0 0 14px rgba(255,255,255,.75),inset 0 -6px 14px rgba(10,80,170,.35),0 8px 16px rgba(0,50,20,.35)}
-.orb::before{content:"";position:absolute;left:20%;top:8%;width:46%;height:26%;border-radius:50%;
-  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.2));transform:rotate(-14deg)}
+.orb::before{content:"";position:absolute;left:var(--hlx,20%);top:8%;width:46%;height:26%;border-radius:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.2));transform:rotate(var(--tilt,-14deg))}
+@keyframes bob{from{translate:0 0}to{translate:0 var(--amp,-5px)}}
+.snd:hover .orb{animation-play-state:paused}
 .orb::after{content:"";position:absolute;right:20%;bottom:18%;width:9px;height:9px;border-radius:50%;background:#fff;box-shadow:0 0 6px 2px rgba(255,255,255,.9)}
 .orb .name{position:absolute;left:8%;right:8%;top:50%;transform:translateY(-50%);text-align:center;font:700 12px/1.15 "Segoe UI";color:var(--pill-ink);
   padding:4px 6px;border-radius:10px;background:var(--pill-bg);box-shadow:0 1px 3px rgba(0,40,90,.25);
@@ -717,6 +724,15 @@ function render(state){
   if(!ok) openDrawer(true);
   renderGrid();
 }
+/* rasgos deterministas por sonido: la misma burbuja siempre se ve igual */
+const TINTS=[['25,105,200','120,205,255'],['18,140,170','120,225,235'],['40,85,210','140,180,255'],['92,78,205','185,170,255'],['15,160,205','130,230,255'],['30,120,150','140,215,210']];
+function traits(id){
+  let h=2166136261; for(const ch of id){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619); }
+  const r=()=>{ h^=h<<13; h^=h>>>17; h^=h<<5; return ((h>>>0)%10000)/10000; };
+  const [t,th]=TINTS[Math.floor(r()*TINTS.length)];
+  return {'--sz':(0.9+r()*0.18).toFixed(3),'--tint':t,'--tint-hi':th,'--tilt':(-26+r()*24).toFixed(1)+'deg','--hlx':(14+r()*14).toFixed(1)+'%',
+    '--rx':(40+r()*20).toFixed(1)+'%','--bob':(3.6+r()*3).toFixed(2)+'s','--dl':(-r()*6).toFixed(2)+'s','--amp':(-(3+r()*4)).toFixed(1)+'px','--oy':(r()*8).toFixed(1)+'px'};
+}
 function renderGrid(){
   const g=$('grid'),q=$('search').value.trim().toLowerCase(); g.innerHTML='';
   let list=(S?.sounds||[]).filter(s=>s.name.toLowerCase().includes(q));
@@ -728,6 +744,7 @@ function renderGrid(){
     const b=document.createElement('button');b.className='snd'+(playing.has(s.id)?' playing':'');b.dataset.id=s.id;
     b.innerHTML='<div class="orb"><div class="name"></div></div><div class="key"></div><span class="del" title="'+T('del_x')+'">✕</span>';
     b.querySelector('.name').textContent=s.name;
+    const orbEl=b.querySelector('.orb'); for(const [k,v] of Object.entries(traits(s.id))) orbEl.style.setProperty(k,v);
     if((S.trims||{})[s.id]) b.querySelector('.orb').insertAdjacentHTML('beforeend','<span class="cut" title="'+T('trimmed')+'">✂</span>');
     const k=b.querySelector('.key'); k.textContent=c?label(c):T('hk_add'); if(!c) k.classList.add('none');
     b.onclick=e=>{ if(e.target===k){openCapture('play:'+s.id,s.name);return;}
@@ -929,6 +946,22 @@ function edLoop(){ if(ED.sid&&ED.playing) drawWave(); requestAnimationFrame(edLo
 function edTime(ev){ const r=$('wave').getBoundingClientRect(); return Math.min(ED.dur,Math.max(0,(ev.clientX-r.left-12)/(r.width-24)*ED.dur)); }
 function edPlay(){ if(!ED.dur) return; bridge.previewTrim(ED.sid,ED.start,ED.end); ED.playT0=performance.now(); ED.playing=true; $('edPlay').classList.add('on'); $('edLcd').classList.add('lit'); }
 function edStop(){ bridge.stopPreview(); ED.playing=false; $('edPlay').classList.remove('on'); $('edLcd').classList.remove('lit'); drawWave(); }
+/* rueda con inercia suave en la rejilla y el cajón */
+function smoothScroll(el){
+  let target=0, anim=null;
+  const step=()=>{ const cur=el.scrollTop, d=target-cur;
+    if(Math.abs(d)<0.5){ el.scrollTop=target; anim=null; return; }
+    el.scrollTop=cur+d*0.17; anim=requestAnimationFrame(step); };
+  el.addEventListener('wheel',e=>{
+    if(e.ctrlKey) return;                                   // Ctrl + rueda = tamaño de ventana
+    e.preventDefault();
+    const d=e.deltaMode===1?e.deltaY*36:e.deltaMode===2?e.deltaY*el.clientHeight:e.deltaY;
+    if(!anim) target=el.scrollTop;
+    target=Math.max(0,Math.min(el.scrollHeight-el.clientHeight,target+d*1.1));
+    if(!anim) anim=requestAnimationFrame(step);
+  },{passive:false});
+  el.addEventListener('scroll',()=>{ if(!anim) target=el.scrollTop; });   // arrastrar la barra no se pelea con la inercia
+}
 function wireEditor(){
   const wave=$('wave');
   wave.addEventListener('mousedown',e=>{
@@ -981,9 +1014,9 @@ window.addEventListener('load',()=>{
       bridge.notice.connect(m=>toast(m));
       bridge.scaleChanged.connect(v=>{ window._scale=v; $('scaleLbl').textContent=T('size')+' '+Math.round(v*100)+'%'; });
       bridge.getScale(v=>{ window._scale=v; $('scaleLbl').textContent=T('size')+' '+Math.round(v*100)+'%'; });
-      wire(); wireEditor(); bridge.getState(j=>render(JSON.parse(j)));
+      wire(); wireEditor(); smoothScroll($('grid')); smoothScroll($('drawer')); bridge.getState(j=>render(JSON.parse(j)));
     });
-  } else { const [b,st]=mockBridge(); bridge=b; wire(); wireEditor(); render(st); }
+  } else { const [b,st]=mockBridge(); bridge=b; wire(); wireEditor(); smoothScroll($('grid')); smoothScroll($('drawer')); render(st); }
 });
 </script>
 </body>
