@@ -41,6 +41,8 @@ If you have ever searched for *"how to play sounds through my mic"*, *"soundboar
 
 <p align="center"><img src="docs/trim.png" width="49%" alt="Trim editor with waveform"> <img src="docs/night.png" width="49%" alt="Night theme"></p>
 
+<p align="center"><img src="docs/connections.png" width="760" alt="Connections panel: microphone, pad, call and headphones joined by cables"></p>
+
 ### Install
 Download from [Releases](../../releases) one of the two versions:
 
