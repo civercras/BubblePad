@@ -22,6 +22,7 @@ DEFAULTS = {
     "vol_call": 0.8,
     "vol_me": 0.6,
     "mic_muted": False,
+    "denoise": True,        # reducir ruido del micro (RNNoise) antes de mezclar
     "hotkeys": {},          # acción -> combinación, p. ej. "play:Ding.wav": "ctrl+alt+Digit1"
     "trims": {},            # sonido -> [inicio, fin] en segundos
     "ui": {},               # idioma, tema, orden, tamaño de ventana

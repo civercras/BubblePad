@@ -13,6 +13,7 @@ import miniaudio
 import numpy as np
 import sounddevice as sd
 
+import denoise
 from i18n import t
 
 AUDIO_EXT = (".mp3", ".wav", ".ogg", ".flac")
@@ -229,6 +230,8 @@ class Engine:
         self.vol_call = 0.8     # sonidos hacia Discord
         self.vol_me = 0.6       # sonidos en tus cascos
         self.mic_muted = False
+        self.denoise_on = True  # limpia tu voz antes de mezclarla (RNNoise)
+        self._denoiser = None
         self.sound_gain = {}    # volumen por sonido (más adelante)
         self.trims = {}         # sid -> (inicio_s, fin_s); el archivo original no se toca
         self.mic_peak = 0.0
@@ -271,6 +274,7 @@ class Engine:
                 raise RuntimeError(t("no_mic", name=name))
             d = sd.query_devices(idx)
             self._mic_rate = int(d["default_samplerate"])
+            self._make_denoiser()
             ch = min(2, d["max_input_channels"])
             self._mic_stream = sd.InputStream(device=idx, samplerate=self._mic_rate, channels=ch,
                                               dtype="float32", latency="low", callback=self._mic_cb)
@@ -278,6 +282,20 @@ class Engine:
             self._mic_stream.start()
         except Exception as e:
             self.errors["mic"] = str(e)
+
+    def _make_denoiser(self):
+        # no se cierra a mano: el hilo de audio puede estar usándolo; se libera solo al soltarlo
+        self._denoiser = None
+        if self.denoise_on and denoise.available():
+            try:
+                self._denoiser = denoise.Denoiser(self._mic_rate)
+            except Exception as e:
+                self.errors["denoise"] = str(e)
+
+    def set_denoise(self, on):
+        self.denoise_on = bool(on)
+        self.errors.pop("denoise", None)
+        self._make_denoiser()
 
     def set_cable(self, name):
         self.cable_name = self.cable.name = name
@@ -327,6 +345,12 @@ class Engine:
     def _mic_cb(self, indata, _frames, _t, _status):
         self._mic_last = time.monotonic()
         mono = indata.mean(axis=1) if indata.shape[1] > 1 else indata[:, 0]
+        dn = self._denoiser
+        if dn is not None:
+            try:
+                mono = dn.process(mono)
+            except Exception:
+                self._denoiser = None                     # si falla, seguimos sin limpiar antes que cortar la voz
         self.mic_peak = max(self.mic_peak * 0.85, float(np.abs(mono).max()) if len(mono) else 0.0)
         self._ring.write(mono.astype(np.float32, copy=False))
 

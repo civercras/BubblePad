@@ -325,6 +325,105 @@ select{width:100%;height:32px;padding:0 10px;border-radius:8px;border:1px solid 
 .tip{font-size:12px;color:var(--ink-soft);padding:10px 12px;border-radius:16px;border:1px dashed rgba(0,110,190,.35)}
 
 
+/* ═════════ PANEL DE CONEXIONES (dentro de la pantalla, hueco 12 → R28) ═════════
+   Micro ─cable→ Bubblepad ←cable─ sonidos ;  Bubblepad ─cable→ llamada / cascos.
+   Coordenadas fijas sobre 586×562 (pantalla 610×586 menos el hueco). */
+.patch{position:absolute;inset:12px;z-index:6;border-radius:28px;overflow:hidden;
+  background:radial-gradient(120% 70% at 50% -10%,rgba(255,255,255,.92) 0%,rgba(234,246,255,.86) 45%,rgba(205,232,250,.84) 100%);
+  backdrop-filter:blur(16px) saturate(1.4);
+  box-shadow:0 12px 34px rgba(0,30,80,.45),inset 0 1px 0 #fff,inset 0 0 0 1px rgba(255,255,255,.6);
+  transform:scale(.96);opacity:0;pointer-events:none;transition:.26s cubic-bezier(.3,1.25,.5,1)}
+.patch.open{transform:none;opacity:1;pointer-events:auto}
+.patch::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(170deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 26%),
+             radial-gradient(60% 40% at 50% 112%,rgba(110,210,90,.28),rgba(110,210,90,0) 70%)}
+.patch-head{position:absolute;left:22px;right:14px;top:12px;height:30px;display:flex;align-items:center;gap:10px;z-index:3}
+.patch-head h3{margin:0;font:800 11px "Segoe UI";letter-spacing:2.5px;color:var(--ink-soft)}
+.patch-head .grow{flex:1}
+.patch svg.wires{position:absolute;left:0;top:0;width:586px;height:562px;z-index:1;overflow:visible}
+.wire .sh{stroke:rgba(0,30,70,.18);stroke-width:11;fill:none;transform:translate(1.5px,4px);filter:blur(1.5px)}
+.wire .jk{stroke:#0d2442;stroke-width:9;fill:none;stroke-linecap:round}
+.wire .co{stroke-width:6;fill:none;stroke-linecap:round}
+.wire .hl{stroke:rgba(255,255,255,.75);stroke-width:1.6;fill:none;stroke-linecap:round;transform:translate(-.6px,-1.6px)}
+.wire .sig{stroke:#fff;stroke-width:3.4;fill:none;stroke-linecap:round;stroke-dasharray:1 15;opacity:0;
+  filter:drop-shadow(0 0 3px rgba(255,255,255,.95));animation:flow .7s linear infinite;transition:opacity .15s}
+.wire.off .co{stroke:#8f9dab!important}
+.wire.off .sig{display:none}
+@keyframes flow{to{stroke-dashoffset:-16}}
+.plug{fill:url(#plugG);stroke:#38485a;stroke-width:1}
+.plug-hl{fill:rgba(255,255,255,.85)}
+
+.pn{position:absolute;width:176px;margin-left:-88px;display:flex;flex-direction:column;align-items:center;gap:6px;z-index:2;text-align:center}
+.pn-ico{position:relative;width:68px;height:68px;filter:drop-shadow(0 6px 7px rgba(0,35,85,.35));transition:transform .25s cubic-bezier(.3,1.5,.5,1)}
+.pn-ico svg,.pn-ico img{width:100%;height:100%;display:block}
+.pn:hover .pn-ico{transform:translateY(-2px) scale(1.04)}
+.pn-ico::after{content:"";position:absolute;left:8px;right:8px;bottom:-9px;height:9px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(0,40,90,.22),rgba(0,40,90,0))}
+.pn-t{font:800 12.5px "Segoe UI";color:var(--ink);margin-top:4px}
+.pn-s{font:600 10.5px "Segoe UI";color:var(--ink-soft);margin-top:-4px}
+.pn-dev{width:100%;height:30px;display:flex;align-items:center;gap:6px;padding:0 10px 0 12px;border-radius:15px;cursor:pointer;
+  border:1px solid rgba(0,80,150,.28);color:var(--ink);font:600 11.5px "Segoe UI";
+  background:linear-gradient(180deg,#ffffff 0%,#eef6fd 48%,#dcebf8 52%,#eaf4fc 100%);
+  box-shadow:0 2px 0 rgba(0,50,110,.18),inset 0 1px 0 #fff;transition:box-shadow .15s,transform .1s}
+.pn-dev span{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;text-align:left}
+.pn-dev i{font-style:normal;font-size:9px;color:var(--ink-soft)}
+.pn-dev:hover{box-shadow:0 2px 0 rgba(0,50,110,.18),0 0 0 3px rgba(80,180,255,.25),inset 0 1px 0 #fff}
+.pn-dev:active{transform:translateY(1px)}
+.pn-dev.empty span{color:#b3261e}
+.pn-vol{width:100%;display:flex;align-items:center;gap:6px;font:600 10.5px "Segoe UI";color:var(--ink-soft)}
+.pn-vol input{flex:1;min-width:0}
+.pn-vol b{width:34px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.pn .err{margin-top:0;text-align:center;font-size:11px}
+.pn-sw{display:flex;align-items:center;gap:8px;cursor:pointer;font:700 11.5px "Segoe UI";color:var(--ink)}
+.pn-sw input{display:none}
+.pn-sw .sw{position:relative;width:34px;height:19px;border-radius:10px;flex:none;
+  background:linear-gradient(180deg,#b7c6d4,#dbe5ee);box-shadow:inset 0 1px 3px rgba(0,30,70,.4);transition:background .2s}
+.pn-sw .sw::after{content:"";position:absolute;left:2px;top:2px;width:15px;height:15px;border-radius:50%;
+  background:radial-gradient(circle at 40% 30%,#fff,#dfe7ee);box-shadow:0 1px 3px rgba(0,30,70,.45);transition:left .2s cubic-bezier(.3,1.4,.5,1)}
+.pn-sw input:checked+.sw{background:linear-gradient(180deg,#8bf05e,#2fb52f 60%,#178c24);box-shadow:inset 0 1px 2px rgba(0,50,0,.35)}
+.pn-sw input:checked+.sw::after{left:17px}
+.pn-sw.na{opacity:.5;cursor:default}
+.pn.pad .pn-ico{width:92px;height:92px}
+.pn.small .pn-ico{width:52px;height:52px}
+.pn.small{flex-direction:row;width:200px;margin-left:-26px;text-align:left;gap:10px}
+.pn.small .pn-t{margin-top:0}
+.pn.small .pn-s{margin-top:1px}
+.patch-tip{position:absolute;left:22px;right:22px;bottom:14px;z-index:2;font-size:11.5px;line-height:1.4;color:var(--ink-soft);
+  padding:9px 12px;border-radius:14px;background:rgba(255,255,255,.55);border:1px dashed rgba(0,110,190,.3)}
+.picker{position:absolute;z-index:7;min-width:220px;max-width:300px;max-height:230px;overflow:auto;padding:6px;border-radius:16px;display:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(232,243,252,.96));backdrop-filter:blur(12px);
+  box-shadow:0 14px 30px rgba(0,30,80,.42),inset 0 1px 0 #fff,0 0 0 1px rgba(0,80,150,.15)}
+.picker.show{display:block}
+.picker button{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:none;border-radius:10px;background:none;cursor:pointer;
+  font:600 12px "Segoe UI";color:var(--ink);text-align:left}
+.picker button:hover{background:linear-gradient(180deg,#e9f6ff,#cde8fb)}
+.picker button.on{color:#0b5fae}
+.picker button.on::before{content:"✓";font-weight:900}
+.picker button:not(.on)::before{content:"";width:9px}
+.picker button small{margin-left:auto;font:700 9.5px "Segoe UI";letter-spacing:.5px;color:#1f8a2c;text-transform:uppercase}
+.picker .none{color:var(--ink-soft)}
+.conn{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.conn .mi{width:34px;height:34px;flex:none;filter:drop-shadow(0 2px 3px rgba(0,35,85,.3))}
+.conn .mi svg,.conn .mi img{width:100%;height:100%}
+.conn .ar{flex:1;height:4px;border-radius:2px;background:linear-gradient(90deg,#6fdcff,#2a8be0)}
+.connbtn{width:100%}
+.night .patch{background:radial-gradient(120% 70% at 50% -10%,rgba(46,58,86,.95) 0%,rgba(24,32,52,.93) 60%,rgba(14,20,36,.92) 100%);
+  box-shadow:0 12px 34px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.14)}
+.night .patch::before{background:linear-gradient(170deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,0) 26%),
+  radial-gradient(60% 40% at 50% 112%,rgba(255,150,50,.16),rgba(255,150,50,0) 70%)}
+.night .patch-head h3{color:#ffb35a}
+.night .pn-t{color:#e6edf7} .night .pn-s,.night .pn-vol{color:#9fb0c8}
+.night .pn-dev{color:#e6edf7;border-color:rgba(255,255,255,.14);background:linear-gradient(180deg,#323b4c,#252c3a 50%,#1f2532 52%,#2a3242);box-shadow:0 2px 0 #0f1218,inset 0 1px 0 rgba(255,255,255,.1)}
+.night .pn-dev i{color:#9fb0c8}
+.night .pn-sw{color:#e6edf7}
+.night .pn-sw input:checked+.sw{background:linear-gradient(180deg,#ffbf6a,#f08a24)}
+.night .patch-tip{background:rgba(0,0,0,.25);color:#9fb0c8;border-color:rgba(255,179,90,.3)}
+.night .picker{background:linear-gradient(180deg,#2a3242,#1b212d);box-shadow:0 14px 30px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.1)}
+.night .picker button{color:#e6edf7}
+.night .picker button:hover{background:rgba(255,255,255,.08)}
+.night .picker button.on{color:#ffb35a}
+.night .wire .jk{stroke:#05080f}
+
 /* ═════════ EDITOR DE RECORTE: módulo LCD tipo Casio (bisel R28 → cristal R18 → teclas R18) ═════════ */
 .editor{position:absolute;left:12px;right:12px;bottom:12px;height:282px;z-index:6;border-radius:28px;padding:10px;
   background:linear-gradient(180deg,#3a3f46 0%,#1d2126 40%,#15181c 100%);
@@ -541,24 +640,11 @@ select{width:100%;height:32px;padding:0 10px;border-radius:8px;border:1px solid 
     </div>
   </section>
   <aside class="drawer" id="drawer">
-    <h3>AUDIO</h3>
+    <h3 data-i18n="conn_title">CONEXIONES</h3>
     <div class="blk">
-      <div class="lab" data-i18n="lab_mic">🎙 Tu micrófono</div>
-      <select id="mic"></select>
-      <div class="rw"><span data-i18n="volume">Volumen</span><input type="range" id="vol_mic" min="0" max="2" step="0.01"><b id="vol_mic_v"></b></div>
-      <div class="err" id="err_mic"></div>
-    </div>
-    <div class="blk">
-      <div class="lab" data-i18n="lab_cable">➜ Micro virtual (para Discord)</div>
-      <select id="cable"></select>
-      <div class="rw"><span data-i18n="sounds">Sonidos</span><input type="range" id="vol_call" min="0" max="2" step="0.01"><b id="vol_call_v"></b></div>
-      <div class="err" id="err_cable"></div>
-    </div>
-    <div class="blk">
-      <div class="lab" data-i18n="lab_monitor">🎧 Escuchar yo en</div>
-      <select id="monitor"></select>
-      <div class="rw"><span data-i18n="sounds">Sonidos</span><input type="range" id="vol_me" min="0" max="2" step="0.01"><b id="vol_me_v"></b></div>
-      <div class="err" id="err_monitor"></div>
+      <div class="conn"><div class="mi" data-ico="mic"></div><div class="ar"></div><div class="mi" data-ico="pad"></div><div class="ar"></div><div class="mi" data-ico="call"></div><div class="mi" data-ico="hp"></div></div>
+      <div class="small" id="connSum"></div>
+      <button class="lang connbtn" id="connBtn" data-i18n="open_patch">Abrir panel de conexiones</button>
     </div>
     <h3 data-i18n="global_hk">ATAJOS GENERALES</h3>
     <div class="blk">
@@ -577,6 +663,53 @@ select{width:100%;height:32px;padding:0 10px;border-radius:8px;border:1px solid 
       Para asignar uno a un sonido: <b>clic derecho</b> sobre su burbuja.<br><br>
       En Discord → Voz y vídeo → Micrófono: <b>CABLE Output</b>.</div>
   </aside>
+  <section class="patch" id="patch">
+    <div class="patch-head"><h3 data-i18n="patch_title">CONEXIONES</h3><div class="grow"></div>
+      <button class="wbtn x" id="patchClose" data-i18n-title="close" title="Cerrar">×</button></div>
+    <svg class="wires" id="wires" viewBox="0 0 586 562"></svg>
+
+    <div class="pn small" style="left:293px;top:70px">
+      <div class="pn-ico" data-ico="note"></div>
+      <div><div class="pn-t" data-i18n="n_sounds">Tus sonidos</div><div class="pn-s" id="sndCount"></div></div>
+    </div>
+
+    <div class="pn" style="left:100px;top:216px">
+      <div class="pn-ico" data-ico="mic"></div>
+      <div class="pn-t" data-i18n="n_mic">Tu micrófono</div>
+      <div class="pn-s" data-i18n="n_mic_sub">Entrada de voz</div>
+      <button class="pn-dev" data-kind="mic"><span></span><i>▼</i></button>
+      <div class="pn-vol"><span data-i18n="volume">Volumen</span><input type="range" id="vol_mic" min="0" max="2" step="0.01"><b id="vol_mic_v"></b></div>
+      <label class="pn-sw" id="denoiseSw"><input type="checkbox" id="denoiseChk"><span class="sw"></span><span data-i18n="denoise">Reducir ruido</span></label>
+      <div class="err" id="err_mic"></div>
+    </div>
+
+    <div class="pn pad" style="left:293px;top:204px">
+      <div class="pn-ico" data-ico="pad"></div>
+      <div class="pn-t">BUBBLEPAD</div>
+      <div class="pn-s" data-i18n="n_pad_sub">Mezcla voz y sonidos</div>
+    </div>
+
+    <div class="pn" style="left:481px;top:106px">
+      <div class="pn-ico" data-ico="call"></div>
+      <div class="pn-t" data-i18n="n_call">La llamada</div>
+      <div class="pn-s" data-i18n="n_call_sub">Discord y juegos · voz + sonidos</div>
+      <button class="pn-dev" data-kind="cable"><span></span><i>▼</i></button>
+      <div class="pn-vol"><span data-i18n="sounds">Sonidos</span><input type="range" id="vol_call" min="0" max="2" step="0.01"><b id="vol_call_v"></b></div>
+      <div class="err" id="err_cable"></div>
+    </div>
+
+    <div class="pn" style="left:481px;top:326px">
+      <div class="pn-ico" data-ico="hp"></div>
+      <div class="pn-t" data-i18n="n_me">Tus cascos</div>
+      <div class="pn-s" data-i18n="n_me_sub">Solo sonidos, sin tu voz</div>
+      <button class="pn-dev" data-kind="monitor"><span></span><i>▼</i></button>
+      <div class="pn-vol"><span data-i18n="sounds">Sonidos</span><input type="range" id="vol_me" min="0" max="2" step="0.01"><b id="vol_me_v"></b></div>
+      <div class="err" id="err_monitor"></div>
+    </div>
+
+    <div class="patch-tip" data-i18n-html="patch_tip"></div>
+    <div class="picker" id="picker"></div>
+  </section>
 </div>
 </div>
 
@@ -650,7 +783,7 @@ const I18N={
   minimize:'Minimizar',hide_tray:'Esconder en la bandeja',ed_play:'Escuchar la selección en tus cascos (Espacio)',ed_stop:'Parar',
   ed_auto:'Quita los silencios del principio y del final',ed_reset:'Volver al audio completo',ed_cancel_tip:'Cerrar sin guardar (Esc)',
   cancel_up:'CANCELAR',save_up:'GUARDAR',lab_mic:'🎙 Tu micrófono',volume:'Volumen',sounds:'Sonidos',lab_cable:'➜ Micro virtual (para Discord y juegos)',
-  lab_monitor:'🎧 Escuchar yo en',global_hk:'ATAJOS GENERALES',stop_all:'Parar todos los sonidos',mute_toggle:'Silenciar / activar micro',lang_title:'IDIOMA',
+  lab_monitor:'🎧 Escuchar yo en',patch_title:'CONEXIONES',conn_title:'CONEXIONES',open_patch:'Abrir panel de conexiones',n_mic:'Tu micrófono',n_mic_sub:'Entrada de voz',n_sounds:'Tus sonidos',n_sounds_sub:'{n} en el pad',n_pad_sub:'Mezcla voz y sonidos',n_call:'La llamada',n_call_sub:'Discord y juegos · voz + sonidos',n_me:'Tus cascos',n_me_sub:'Solo sonidos, sin tu voz',denoise:'Reducir ruido',denoise_tip:'Limpia el ruido de fondo de tu micro antes de mezclarlo. Así puedes quitar la supresión de ruido de Discord sin que filtre tus sonidos.',denoise_na:'No disponible en esta instalación',recommended:'recomendado',close:'Cerrar',patch_tip:'Pulsa un aparato para elegir su dispositivo. En Discord o tu juego elige <b>CABLE Output</b> como micrófono y <b>quita su supresión de ruido</b>: Bubblepad ya limpia tu voz.',global_hk:'ATAJOS GENERALES',stop_all:'Parar todos los sonidos',mute_toggle:'Silenciar / activar micro',lang_title:'IDIOMA',
   tip:'Los atajos funcionan con la ventana minimizada o escondida. Para asignar uno a un sonido: <b>clic derecho</b> sobre su burbuja.<br><br>En Discord o tu juego → ajustes de voz → Micrófono: <b>CABLE Output</b>.',
   m_play:'▶ Reproducir',m_hotkey:'⌨ Asignar atajo…',m_unhotkey:'✕ Quitar atajo',m_trim:'✂ Recortar…',m_stop:'■ Parar este sonido',m_delete:'✕ Eliminar sonido…',
   cap_help:'Pulsa la combinación de teclas. <b>Esc</b> para cancelar.',remove_hk:'Quitar atajo',cancel:'Cancelar',delete:'Eliminar',
@@ -669,7 +802,7 @@ const I18N={
   minimize:'Minimize',hide_tray:'Hide to tray',ed_play:'Preview the selection in your headphones (Space)',ed_stop:'Stop',
   ed_auto:'Removes silence at the start and end',ed_reset:'Back to the full sound',ed_cancel_tip:'Close without saving (Esc)',
   cancel_up:'CANCEL',save_up:'SAVE',lab_mic:'🎙 Your microphone',volume:'Volume',sounds:'Sounds',lab_cable:'➜ Virtual mic (for Discord & games)',
-  lab_monitor:'🎧 I listen on',global_hk:'GLOBAL HOTKEYS',stop_all:'Stop all sounds',mute_toggle:'Mute / unmute mic',lang_title:'LANGUAGE',
+  lab_monitor:'🎧 I listen on',patch_title:'CONNECTIONS',conn_title:'CONNECTIONS',open_patch:'Open connections panel',n_mic:'Your microphone',n_mic_sub:'Voice input',n_sounds:'Your sounds',n_sounds_sub:'{n} on the pad',n_pad_sub:'Mixes voice and sounds',n_call:'The call',n_call_sub:'Discord & games · voice + sounds',n_me:'Your headphones',n_me_sub:'Sounds only, without your voice',denoise:'Reduce noise',denoise_tip:'Cleans background noise from your mic before mixing. You can turn off Discord’s noise suppression without it filtering your sounds.',denoise_na:'Not available in this install',recommended:'recommended',close:'Close',patch_tip:'Click a device to choose it. In Discord or your game pick <b>CABLE Output</b> as the microphone and <b>turn off its noise suppression</b>: Bubblepad already cleans your voice.',global_hk:'GLOBAL HOTKEYS',stop_all:'Stop all sounds',mute_toggle:'Mute / unmute mic',lang_title:'LANGUAGE',
   tip:'Hotkeys work even when the window is minimized or hidden. To give a sound a hotkey: <b>right-click</b> its bubble.<br><br>In Discord or your game → voice settings → Microphone: <b>CABLE Output</b>.',
   m_play:'▶ Play',m_hotkey:'⌨ Set hotkey…',m_unhotkey:'✕ Remove hotkey',m_trim:'✂ Trim…',m_stop:'■ Stop this sound',m_delete:'✕ Delete sound…',
   cap_help:'Press the key combination. <b>Esc</b> to cancel.',remove_hk:'Remove hotkey',cancel:'Cancel',delete:'Delete',
@@ -739,7 +872,7 @@ function render(state){
   if(!themeInit){ themeInit=true; applyTheme(ui.theme==='night'?'night':'day',false); SORT_HK=ui.sort_hotkeys!==false; }
   if(ui.lang && ui.lang!==LANG){ applyLang(ui.lang); return; }
   $('sortBtn').classList.toggle('on',SORT_HK);
-  fillSelect($('mic'),S.inputs,S.mic); fillSelect($('cable'),S.outputs,S.cable); fillSelect($('monitor'),S.outputs,S.monitor);
+  renderPatch();
   for(const k of ['vol_mic','vol_call','vol_me']) setVol(k,S[k]);
   for(const k of ['mic','cable','monitor']){const e=$('err_'+k),m=(S.errors||{})[k];e.style.display=m?'block':'none';e.textContent=m||'';}
   $('muteBtn').classList.toggle('muted',S.mic_muted);
@@ -749,7 +882,7 @@ function render(state){
   document.querySelectorAll('.hk-row .key').forEach(k=>{const c=S.hotkeys[k.dataset.action];k.textContent=c?label(c):T('assign');});
   $('adminBtn').textContent=T(S.admin?'admin_on':'admin_btn'); $('adminBtn').disabled=!!S.admin; $('adminBtn').classList.toggle('on',!!S.admin);
   $('adminStart').checked=!!ui.admin_on_start;
-  if(!ok && !S.cable_missing) openDrawer(true);
+  if(!ok && !S.cable_missing) openPatch(true);
   renderCable();
   renderGrid();
 }
@@ -834,6 +967,7 @@ function onLevels(json){
   if(now.size&&!playing.size) clockStart=performance.now();
   if(!now.size) clockStart=null;
   playing=now;
+  wireLevels(d.levels,now.size>0);
   $('lcd').classList.toggle('lit',now.size>0);
   const names=[...now].map(id=>(S?.sounds||[]).find(s=>s.id===id)?.name||id);
   setName(names.length?segText(names.join(' + ')):T('idle'));
@@ -876,7 +1010,7 @@ function onCaptureKey(e){
 }
 
 function wire(){
-  for(const k of ['mic','cable','monitor']) $(k).onchange=e=>bridge.setDevice(k,e.target.value);
+  wirePatch();
   for(const k of ['vol_mic','vol_call','vol_me']) $(k).oninput=e=>{const v=+e.target.value;setVol(k,v);bridge.setVolume(k,v);};
   $('vol_call_main').oninput=e=>{const v=+e.target.value;setVol('vol_call',v);bridge.setVolume('vol_call',v);};
   $('vol_mic_main').oninput=e=>{const v=+e.target.value;setVol('vol_mic',v);bridge.setVolume('vol_mic',v);};
@@ -917,7 +1051,7 @@ function wire(){
     if(delSid){ if(e.key==='Escape') closeDelete(); if(e.key==='Enter') $('delOk').click(); return; }
     if(ED.sid){ if(e.key==='Escape'){e.preventDefault();closeEditor();}
       else if(e.code==='Space'&&e.target.tagName!=='INPUT'){e.preventDefault();ED.previewing?edStop():edPlay();} return; }
-    if(e.key==='Escape'){closeMenu(); if($('drawer').classList.contains('open')) openDrawer(false); else bridge.stop('');}
+    if(e.key==='Escape'){closeMenu(); if($('picker').classList.contains('show')) closePicker(); else if($('patch').classList.contains('open')) openPatch(false); else if($('drawer').classList.contains('open')) openDrawer(false); else bridge.stop('');}
   },true);
   ['chassis','chassisN'].forEach(id=>$(id).addEventListener('mousedown',e=>{ if(e.button===0) bridge.startMove(); }));
   document.querySelectorAll('.bezel,.tray,.well').forEach(el=>el.addEventListener('mousedown',e=>{
@@ -1038,15 +1172,128 @@ function wireEditor(){
   edLoop();
 }
 
+/* ═════════ PANEL DE CONEXIONES ═════════ */
+const ICO={
+mic:`<svg viewBox="0 0 64 64"><defs>
+<linearGradient id="icMicH" x1="0" x2="1"><stop offset="0" stop-color="#8d99a6"/><stop offset=".22" stop-color="#f7fafc"/><stop offset=".5" stop-color="#c3ccd5"/><stop offset=".78" stop-color="#eef2f6"/><stop offset="1" stop-color="#7b8794"/></linearGradient>
+<linearGradient id="icMicB" x1="0" x2="1"><stop offset="0" stop-color="#1a1f26"/><stop offset=".35" stop-color="#5a6470"/><stop offset=".55" stop-color="#2b323b"/><stop offset="1" stop-color="#0e1116"/></linearGradient>
+<linearGradient id="icMicR" x1="0" x2="1"><stop offset="0" stop-color="#3f9cf0"/><stop offset=".4" stop-color="#bfe8ff"/><stop offset="1" stop-color="#1b5fb8"/></linearGradient>
+<clipPath id="icMicC"><rect x="19" y="5" width="26" height="31" rx="13"/></clipPath></defs>
+<rect x="19" y="5" width="26" height="31" rx="13" fill="url(#icMicH)" stroke="#5f6b78" stroke-width="1"/>
+<g clip-path="url(#icMicC)" stroke="#55606c" stroke-width=".9" opacity=".55">${Array.from({length:9},(_,i)=>`<line x1="19" x2="45" y1="${9+i*3.2}" y2="${9+i*3.2}"/>`).join('')}${Array.from({length:7},(_,i)=>`<line y1="5" y2="36" x1="${21+i*3.6}" x2="${21+i*3.6}"/>`).join('')}</g>
+<ellipse cx="27" cy="13" rx="5" ry="7" fill="#fff" opacity=".75"/>
+<rect x="17.5" y="33" width="29" height="6" rx="3" fill="url(#icMicR)" stroke="#124a92" stroke-width=".8"/>
+<path d="M23 39 H41 L38 56 Q32 59 26 56 Z" fill="url(#icMicB)"/>
+<path d="M27 40 L29 55" stroke="#fff" stroke-width="1.4" opacity=".35" stroke-linecap="round"/>
+<ellipse cx="32" cy="58" rx="10" ry="2.4" fill="#10161d" opacity=".55"/></svg>`,
+hp:`<svg viewBox="0 0 64 64"><defs>
+<linearGradient id="icHpB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f7fa"/><stop offset=".5" stop-color="#9aa7b4"/><stop offset="1" stop-color="#5d6a78"/></linearGradient>
+<linearGradient id="icHpC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ae2ff"/><stop offset=".45" stop-color="#1f8be6"/><stop offset="1" stop-color="#0a3d8a"/></linearGradient>
+<linearGradient id="icHpP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a414c"/><stop offset="1" stop-color="#11151b"/></linearGradient></defs>
+<path d="M12 38 V32 A20 20 0 0 1 52 32 V38" fill="none" stroke="#3d4855" stroke-width="7.5" stroke-linecap="round"/>
+<path d="M12 38 V32 A20 20 0 0 1 52 32 V38" fill="none" stroke="url(#icHpB)" stroke-width="5" stroke-linecap="round"/>
+<path d="M16 26 A18 18 0 0 1 40 13" fill="none" stroke="#fff" stroke-width="1.3" opacity=".8" stroke-linecap="round"/>
+<rect x="5" y="33" width="15" height="24" rx="7" fill="url(#icHpP)"/><rect x="44" y="33" width="15" height="24" rx="7" fill="url(#icHpP)"/>
+<rect x="9" y="35" width="12" height="20" rx="6" fill="url(#icHpC)" stroke="#0a3d8a" stroke-width=".8"/>
+<rect x="43" y="35" width="12" height="20" rx="6" fill="url(#icHpC)" stroke="#0a3d8a" stroke-width=".8"/>
+<ellipse cx="13.5" cy="40.5" rx="2.6" ry="4" fill="#fff" opacity=".75"/><ellipse cx="47.5" cy="40.5" rx="2.6" ry="4" fill="#fff" opacity=".75"/></svg>`,
+call:`<svg viewBox="0 0 64 64"><defs>
+<radialGradient id="icGlS" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#d9f6ff"/><stop offset=".45" stop-color="#3aa9f2"/><stop offset="1" stop-color="#0b3f96"/></radialGradient>
+<linearGradient id="icGlL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c6ff7e"/><stop offset=".6" stop-color="#46b52f"/><stop offset="1" stop-color="#1d7a22"/></linearGradient>
+<linearGradient id="icGlH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<clipPath id="icGlC"><circle cx="30" cy="30" r="24"/></clipPath>
+<linearGradient id="icGlB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d7e6f3"/></linearGradient></defs>
+<circle cx="30" cy="30" r="24" fill="url(#icGlS)" stroke="#0b3f96" stroke-width="1"/>
+<g clip-path="url(#icGlC)" fill="url(#icGlL)" stroke="#2a7d25" stroke-width=".6">
+<path d="M10 18 C16 12 26 13 27 19 C28 25 21 24 20 30 C19 35 13 36 9 32 Z"/>
+<path d="M33 10 C40 9 48 14 47 20 C46 25 39 22 36 26 C33 30 37 36 33 40 C29 44 27 37 29 31 C31 25 27 21 29 16 Z"/>
+<path d="M40 40 C45 38 52 41 51 47 C49 52 42 51 40 47 Z"/></g>
+<ellipse cx="25" cy="17" rx="15" ry="9" fill="url(#icGlH)"/>
+<path d="M40 38 h17 a5 5 0 0 1 5 5 v8 a5 5 0 0 1 -5 5 h-8 l-5 5 v-5 h-4 a5 5 0 0 1 -5 -5 v-8 a5 5 0 0 1 5 -5 z" fill="url(#icGlB)" stroke="#5a7ea3" stroke-width="1"/>
+<circle cx="45" cy="47" r="1.8" fill="#1f86d9"/><circle cx="50" cy="47" r="1.8" fill="#1f86d9"/><circle cx="55" cy="47" r="1.8" fill="#1f86d9"/></svg>`,
+note:`<svg viewBox="0 0 64 64"><defs>
+<radialGradient id="icBb1" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#e3f7ff" stop-opacity=".95"/><stop offset=".8" stop-color="#7fd0f5" stop-opacity=".85"/><stop offset="1" stop-color="#2a8fd0"/></radialGradient>
+<radialGradient id="icBb2" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#f0ffe0" stop-opacity=".95"/><stop offset=".8" stop-color="#a6e87a" stop-opacity=".85"/><stop offset="1" stop-color="#3a9e2e"/></radialGradient>
+<radialGradient id="icBb3" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#fff2dc" stop-opacity=".95"/><stop offset=".8" stop-color="#ffc472" stop-opacity=".88"/><stop offset="1" stop-color="#d9720f"/></radialGradient></defs>
+<circle cx="22" cy="40" r="17" fill="url(#icBb1)" stroke="#2a7fbf" stroke-width="1"/>
+<circle cx="44" cy="44" r="13" fill="url(#icBb2)" stroke="#2f8a2a" stroke-width="1"/>
+<circle cx="38" cy="19" r="14" fill="url(#icBb3)" stroke="#c2620c" stroke-width="1"/>
+<ellipse cx="17" cy="33" rx="6" ry="4" fill="#fff" opacity=".9"/><ellipse cx="40" cy="39" rx="4.5" ry="3" fill="#fff" opacity=".9"/><ellipse cx="33" cy="13" rx="5" ry="3.4" fill="#fff" opacity=".9"/>
+<path d="M36 13 l6 -1.5 v9 a2.6 2.2 0 1 1 -1.4 -1.9 v-4.8 l-3.2 .8 v6.6 a2.6 2.2 0 1 1 -1.4 -1.9 z" fill="#b4540a" opacity=".85"/></svg>`,
+pad:`<img src="../assets/bubblepad.png" alt="" draggable="false">`
+};
+const WIRES={
+  mic:{d:'M134,250 C175,286 206,286 247,250',c:'#46c93a'},
+  snd:{d:'M293,122 C306,150 280,176 293,204',c:'#ff9a2e'},
+  call:{d:'M339,236 C394,236 392,140 447,140',c:'#1f8be6'},
+  me:{d:'M339,264 C394,264 392,360 447,360',c:'#22b6c8'}
+};
+function buildPatch(){
+  document.querySelectorAll('[data-ico]').forEach(el=>el.innerHTML=ICO[el.dataset.ico]);
+  const svg=$('wires'); let h=`<defs><radialGradient id="plugG" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#b9c4cf"/><stop offset="1" stop-color="#6b7886"/></radialGradient></defs>`;
+  for(const [k,w] of Object.entries(WIRES)){
+    const m=w.d.match(/-?\d+(\.\d+)?/g).map(Number), a=[m[0],m[1]], b=[m[m.length-2],m[m.length-1]];
+    h+=`<g class="wire" id="w_${k}"><path class="sh" d="${w.d}"/><path class="jk" d="${w.d}"/><path class="co" d="${w.d}" stroke="${w.c}"/><path class="hl" d="${w.d}"/><path class="sig" d="${w.d}"/>`+
+       [a,b].map(([x,y])=>`<circle class="plug" cx="${x}" cy="${y}" r="6.5"/><circle class="plug-hl" cx="${x-2}" cy="${y-2.3}" r="1.8"/>`).join('')+`</g>`;
+  }
+  svg.innerHTML=h;
+}
+const shortDev=n=>n?n.replace(/\s*\((VB-Audio Virtual Cable)\)/i,'').trim():T('none');
+function renderPatch(){
+  if(!S) return;
+  for(const k of ['mic','cable','monitor']){
+    const b=document.querySelector(`.pn-dev[data-kind="${k}"]`); if(!b) continue;
+    b.querySelector('span').textContent=shortDev(S[k]); b.title=S[k]||''; b.classList.toggle('empty',!S[k]);
+  }
+  const ok=!!S.denoise_ok, chk=$('denoiseChk');
+  chk.checked=ok&&!!S.denoise; chk.disabled=!ok; $('denoiseSw').classList.toggle('na',!ok);
+  $('denoiseSw').title=T(ok?'denoise_tip':'denoise_na');
+  $('sndCount').textContent=T('n_sounds_sub',{n:(S.sounds||[]).length});
+  $('w_mic').classList.toggle('off',!S.mic||S.mic_muted);
+  $('w_call').classList.toggle('off',!S.cable);
+  $('w_me').classList.toggle('off',!S.monitor);
+  $('connSum').textContent=`${shortDev(S.mic)} → ${shortDev(S.cable)} · ${shortDev(S.monitor)}`;
+}
+function wireLevels(lv,nowPlaying){
+  const set=(id,v)=>{const s=document.querySelector(`#${id} .sig`); if(s) s.style.opacity=Math.min(1,v*2.2).toFixed(2);};
+  set('w_mic',S&&S.mic_muted?0:lv.mic); set('w_snd',nowPlaying?.9:0); set('w_call',lv.call); set('w_me',lv.me);
+}
+function openPatch(on){ $('patch').classList.toggle('open',on); if(on){ openDrawer(false); renderPatch(); } else closePicker(); }
+function closePicker(){ $('picker').classList.remove('show'); }
+function openPicker(kind,btn){
+  const pk=$('picker'), list=kind==='mic'?(S.inputs||[]):(S.outputs||[]);
+  const rec=n=>kind==='cable'?/CABLE INPUT/i.test(n):kind==='mic'?!/CABLE/i.test(n):!/CABLE/i.test(n);
+  const items=[...list].sort((a,b)=>rec(b)-rec(a));
+  pk.innerHTML=items.map(n=>`<button data-v="${n.replace(/"/g,'&quot;')}" class="${n===S[kind]?'on':''}">${n.replace(/</g,'&lt;')}${kind==='cable'&&/CABLE INPUT/i.test(n)?`<small>${T('recommended')}</small>`:''}</button>`).join('')+
+    `<button data-v="" class="none ${!S[kind]?'on':''}">${T('none')}</button>`;
+  pk.querySelectorAll('button').forEach(b=>b.onclick=()=>{ closePicker(); bridge.setDevice(kind,b.dataset.v); });
+  const pr=$('patch').getBoundingClientRect(), br=btn.getBoundingClientRect(), sc=pr.width/586;
+  pk.classList.add('show');
+  let x=(br.left-pr.left)/sc, y=(br.bottom-pr.top)/sc+6;
+  const w=pk.offsetWidth, h=pk.offsetHeight;
+  x=Math.max(10,Math.min(586-w-10,x+((br.width/sc)-w)/2)); if(y+h>552) y=(br.top-pr.top)/sc-h-6;
+  pk.style.left=x+'px'; pk.style.top=y+'px';
+}
+function wirePatch(){
+  buildPatch();
+  document.querySelectorAll('.pn-dev').forEach(b=>b.onclick=e=>{ e.stopPropagation();
+    const pk=$('picker'); if(pk.classList.contains('show')&&pk.dataset.kind===b.dataset.kind){closePicker();return;}
+    pk.dataset.kind=b.dataset.kind; openPicker(b.dataset.kind,b); });
+  $('patch').addEventListener('click',e=>{ if(!e.target.closest('#picker')) closePicker(); });
+  $('patchClose').onclick=()=>openPatch(false);
+  $('connBtn').onclick=()=>openPatch(true);
+  $('denoiseChk').onchange=e=>bridge.setDenoise(e.target.checked);
+}
+
 function mockBridge(){
   document.body.classList.add('preview');
   const st={inputs:['Micrófono (Realtek(R) Audio)','CABLE Output (VB-Audio Virtual Cable)'],
     outputs:['Altavoces (Realtek(R) Audio)','Auriculares (HyperX Cloud)','CABLE Input (VB-Audio Virtual Cable)'],
     mic:'Micrófono (Realtek(R) Audio)',cable:'CABLE Input (VB-Audio Virtual Cable)',monitor:'Auriculares (HyperX Cloud)',
-    vol_mic:1,vol_call:.8,vol_me:.6,mic_muted:false,errors:{},cable_missing:location.hash==='#nocable',ui:{lang:(navigator.language||'es').slice(0,2),theme:'day',sort_hotkeys:true},trims:{'Boing':[0.1,0.7]},hotkeys:{'play:Ding':'ctrl+alt+Digit1','play:Bocina':'Numpad1','play:Airhorn':'Numpad1','stop':'ctrl+alt+Digit0'},
+    vol_mic:1,vol_call:.8,vol_me:.6,mic_muted:false,denoise:true,denoise_ok:true,errors:{},cable_missing:location.hash==='#nocable',ui:{lang:(navigator.language||'es').slice(0,2),theme:'day',sort_hotkeys:true},trims:{'Boing':[0.1,0.7]},hotkeys:{'play:Ding':'ctrl+alt+Digit1','play:Bocina':'Numpad1','play:Airhorn':'Numpad1','stop':'ctrl+alt+Digit0'},
     sounds:((navigator.language||'es').startsWith('es')?['Bocina','Ding','Boing','Risas enlatadas','Redoble de tambor','Bruh','Aplausos','Grillos','Trombón triste','Wow']:['Airhorn','Ding','Boing','Laugh track','Drumroll','Bruh','Applause','Crickets','Sad trombone','Wow']).map(n=>({id:n,name:n}))};
   const pl=new Set(['Ding']);
-  const b={setDevice:(k,v)=>{st[k]=v;render(st)},setVolume:(k,v)=>{st[k]=v},toggleMute:()=>{st.mic_muted=!st.mic_muted;render(st)},
+  const b={setDevice:(k,v)=>{st[k]=v;render(st)},setDenoise:v=>{st.denoise=v;render(st)},setVolume:(k,v)=>{st[k]=v},toggleMute:()=>{st.mic_muted=!st.mic_muted;render(st)},
     play:id=>{pl.add(id);setTimeout(()=>pl.delete(id),2500)},stop:id=>{id?pl.delete(id):pl.clear()},
     setHotkey:(a,c)=>{for(const[k,v]of Object.entries(st.hotkeys))if(v===c)delete st.hotkeys[k];c?st.hotkeys[a]=c:delete st.hotkeys[a];render(st)},
     capturing:()=>{},addSounds:()=>toast('(vista previa)'),openFolder:()=>toast('(vista previa)'),refresh:()=>{},

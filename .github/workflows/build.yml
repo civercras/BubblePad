@@ -1,6 +1,8 @@
 name: Build Windows release
 
-# GitHub compila Bubblepad.exe en Windows y lo publica en Releases como Bubblepad-windows.zip.
+# GitHub compila Bubblepad.exe en Windows y lo publica en Releases de dos formas:
+#   Bubblepad-Setup.exe   instalador (recomendado)
+#   Bubblepad-windows.zip versión portable
 # Se lanza desde Actions → "Build Windows release" → Run workflow (escribiendo la versión, p. ej. v0.1.2),
 # o subiendo una etiqueta vX.Y.Z.
 on:
@@ -30,22 +32,47 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt pyinstaller
+          # RNNoise (reducción de ruido): solo necesitamos su librería nativa, sin dependencias
+          pip install --no-deps pyrnnoise==0.4.5
+
+      - name: Locate RNNoise
+        shell: pwsh
+        run: |
+          $dir = python -c "import importlib.util,os;s=importlib.util.find_spec('pyrnnoise');print(s.submodule_search_locations[0])"
+          $dll = Join-Path $dir "rnnoise.dll"
+          if (!(Test-Path $dll)) { throw "rnnoise.dll not found in $dir" }
+          "RNNOISE_DLL=$dll" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Build Bubblepad.exe
         run: >
           pyinstaller --noconfirm --clean --windowed --name Bubblepad
           --icon assets\bubblepad.ico
           --add-data "ui;ui" --add-data "assets;assets" --add-data "demo_sounds;demo_sounds"
+          --add-binary "${{ env.RNNOISE_DLL }};rnnoise"
           bubblepad.py
 
       - name: Zip
         shell: pwsh
         run: Compress-Archive -Path dist\Bubblepad -DestinationPath Bubblepad-windows.zip -Force
 
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $v = "${{ inputs.version || github.ref_name }}".TrimStart("v")
+          if (-not $v -or $v -eq "main") { $v = "0.0.0-dev" }
+          if (!(Get-Command iscc -ErrorAction SilentlyContinue)) {
+            choco install innosetup -y --no-progress | Out-Null
+            $env:PATH += ";C:\Program Files (x86)\Inno Setup 6"
+          }
+          iscc "/DMyAppVersion=$v" installer\bubblepad.iss
+          Move-Item dist\Bubblepad-Setup.exe Bubblepad-Setup.exe -Force
+
       - uses: actions/upload-artifact@v4
         with:
           name: Bubblepad-windows
-          path: Bubblepad-windows.zip
+          path: |
+            Bubblepad-Setup.exe
+            Bubblepad-windows.zip
 
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/') || inputs.version != ''
@@ -53,7 +80,9 @@ jobs:
         with:
           tag_name: ${{ inputs.version || github.ref_name }}
           target_commitish: ${{ github.sha }}
-          files: Bubblepad-windows.zip
+          files: |
+            Bubblepad-Setup.exe
+            Bubblepad-windows.zip
           name: Bubblepad ${{ inputs.version || github.ref_name }} (early access)
           body_path: docs/RELEASE_NOTES.md
           prerelease: true

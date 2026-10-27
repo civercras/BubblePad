@@ -20,6 +20,7 @@ import vbcable
 import i18n
 from i18n import t
 from engine import AUDIO_EXT, Engine, default_devices, list_devices
+from denoise import available as denoise_available
 from hotkeys import HotkeyManager
 
 APP_ID = "bubblepad-app"
@@ -107,6 +108,10 @@ class Bridge(QObject):
     @Slot(str, float)
     def setVolume(self, kind, value):
         self.app.set_volume(kind, value)
+
+    @Slot(bool)
+    def setDenoise(self, on):
+        self.app.set_denoise(on)
 
     @Slot()
     def toggleMute(self):
@@ -356,6 +361,7 @@ class BubblepadApp:
         self.engine.vol_call = cfg["vol_call"]
         self.engine.vol_me = cfg["vol_me"]
         self.engine.mic_muted = cfg["mic_muted"]
+        self.engine.denoise_on = bool(cfg.get("denoise", True))
         self.engine.trims = {k: tuple(v) for k, v in cfg["trims"].items()}
         self.engine.start(cfg["mic"], cfg["cable"], cfg["monitor"])
         self.scan_sounds()
@@ -501,6 +507,7 @@ class BubblepadApp:
             "mic": e.mic_name, "cable": e.cable_name, "monitor": e.monitor_name,
             "vol_mic": e.vol_mic, "vol_call": e.vol_call, "vol_me": e.vol_me,
             "mic_muted": e.mic_muted,
+            "denoise": e.denoise_on, "denoise_ok": denoise_available(),
             "sounds": [{"id": s, "name": os.path.splitext(s)[0]} for s in self.sounds],
             "errors": e.errors,
             "hotkeys": self.cfg["hotkeys"],
@@ -533,6 +540,12 @@ class BubblepadApp:
             setattr(self.engine, kind, value)
             self.cfg[kind] = value
             self._save_soon()
+
+    def set_denoise(self, on):
+        self.engine.set_denoise(on)
+        self.cfg["denoise"] = bool(on)
+        config.save(self.cfg)
+        self.push_state()
 
     def _save_soon(self):
         if not hasattr(self, "_save_timer"):
