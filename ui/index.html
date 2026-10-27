@@ -825,7 +825,7 @@ function applyLang(lang){
   document.querySelectorAll('[data-i18n-tip]').forEach(e=>e.dataset.tip=T(e.dataset.i18nTip));
   document.querySelectorAll('[data-i18n-title]').forEach(e=>e.title=T(e.dataset.i18nTitle));
   document.querySelectorAll('[data-i18n-ph]').forEach(e=>e.placeholder=T(e.dataset.i18nPh));
-  document.querySelectorAll('.lang').forEach(b=>b.classList.toggle('on',b.dataset.lang===LANG));
+  document.querySelectorAll('.lang[data-lang]').forEach(b=>b.classList.toggle('on',b.dataset.lang===LANG));
   const g=$('gripHit'); if(g) g.innerHTML='<title>'+T('grip')+'</title>';
   $('scaleLbl').textContent=T('size')+' '+Math.round((window._scale||1)*100)+'%';
   lastName=''; if(S){ render(S); }
@@ -1027,7 +1027,7 @@ function wire(){
   $('gripHit').addEventListener('mousedown',e=>{ if(e.button!==0) return; e.stopPropagation(); e.preventDefault(); bridge.startResize(); });
   $('gripHit').addEventListener('dblclick',e=>{ e.stopPropagation(); bridge.resetScale(); });
   
-  document.querySelectorAll('.lang').forEach(b=>b.onclick=()=>{ applyLang(b.dataset.lang); bridge.setUi('lang',LANG); });
+  document.querySelectorAll('.lang[data-lang]').forEach(b=>b.onclick=()=>{ const l=b.dataset.lang; if(S) S.ui={...(S.ui||{}),lang:l}; applyLang(l); bridge.setUi('lang',l); });
   $('adminBtn').onclick=()=>bridge.relaunchAdmin();
   $('adminStart').onchange=e=>bridge.setUi('admin_on_start',e.target.checked?'1':'0');
   $('themeBtn').onclick=()=>{ const t=THEME==='night'?'day':'night'; applyTheme(t,true); bridge.setUi('theme',t); };
@@ -1301,7 +1301,7 @@ function mockBridge(){
     getWaveform:(id,cb)=>{const n=900,pk=[];for(let i=0;i<n;i++){const t=i/n;pk.push(t<.12||t>.82?Math.random()*.015:Math.abs(Math.sin(t*40))*Math.exp(-(t-.12)*3)*.9+Math.random()*.08);}
       setTimeout(()=>cb(JSON.stringify({duration:2.6,peaks:pk,start:0,end:2.6,auto:[0.29,2.21]})),200);},
     previewTrim:(id,a,b)=>{pl.add('__preview__');setTimeout(()=>pl.delete('__preview__'),(b-a)*1000)},stopPreview:()=>pl.delete('__preview__'),
-    installCable:()=>{let p=0;const iv=setInterval(()=>{p+=20;onCableProgress('download',Math.min(p,100));if(p>=120){clearInterval(iv);onCableProgress('installer',100);setTimeout(()=>onCableProgress('done',100),1500);}},300);}, openCableWeb:()=>{}, restartPc:()=>{}, setUi:()=>{}, relaunchAdmin:()=>toast('(preview)'), startResize:()=>{}, resetScale:()=>{}, zoomStep:()=>{},
+    installCable:()=>{let p=0;const iv=setInterval(()=>{p+=20;onCableProgress('download',Math.min(p,100));if(p>=120){clearInterval(iv);onCableProgress('installer',100);setTimeout(()=>onCableProgress('done',100),1500);}},300);}, openCableWeb:()=>{}, restartPc:()=>{}, setUi:(k,v)=>{st.ui[k]=v; if(k==='lang') render(st);}, relaunchAdmin:()=>toast('(preview)'), startResize:()=>{}, resetScale:()=>{}, zoomStep:()=>{},
     deleteSound:id=>{st.sounds=st.sounds.filter(x=>x.id!==id);render(st);},
     setTrim:(id,a,b,d)=>{st.trims=st.trims||{};st.trims[id]=[a,b];render(st)}};
   setInterval(()=>onLevels(JSON.stringify({levels:{mic:Math.random()*.45,call:pl.size?.5+Math.random()*.3:.08,me:pl.size?.45+Math.random()*.2:0},playing:[...pl]})),90);
