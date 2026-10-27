@@ -92,6 +92,7 @@ class Bridge(QObject):
     notice = Signal(str)
     scaleChanged = Signal(float)
     cableProgress = Signal(str, int)
+    wavesReady = Signal(str)
 
     def __init__(self, app):
         super().__init__()
@@ -160,6 +161,8 @@ class Bridge(QObject):
             ui["theme"] = "night" if value == "night" else "day"
         elif key == "sort_hotkeys":
             ui["sort_hotkeys"] = value == "1"
+        elif key == "skin":
+            ui["skin"] = "aqua" if value == "aqua" else "chrome"
         elif key == "admin_on_start":
             ui["admin_on_start"] = value == "1"
         elif key == "lang":
@@ -180,6 +183,10 @@ class Bridge(QObject):
     @Slot()
     def resetScale(self):
         self.app.window.set_scale(1.0)
+
+    @Slot()
+    def requestWaves(self):
+        self.app.request_waves()
 
     @Slot()
     def installCable(self):
@@ -562,6 +569,29 @@ class BubblepadApp:
         self.tray.setIcon(bubble_icon(e.mic_muted))
         self.push_state()
 
+    # ── mini-ondas para la lista (en segundo plano, con caché) ──
+    def request_waves(self):
+        import threading
+        if getattr(self, "_waves_busy", False):
+            return
+        self._waves_busy = True
+        cache = self.__dict__.setdefault("_waves", {})
+        todo = [(sid, tuple(self.cfg["trims"].get(sid, ()))) for sid in self.sounds]
+
+        def work():
+            out = {}
+            for sid, tr in todo:
+                key = (sid, tr)
+                if key not in cache:
+                    try:
+                        cache[key] = self.engine.mini_wave(sid)
+                    except Exception:
+                        cache[key] = {"peaks": [], "dur": 0}
+                out[sid] = cache[key]
+            self._waves_busy = False
+            self.bridge.wavesReady.emit(json.dumps(out))
+        threading.Thread(target=work, daemon=True).start()
+
     # ── recorte ──
     def set_trim(self, sid, start, end, duration):
         start, end = max(0.0, start), min(duration, end)
@@ -626,7 +656,7 @@ class BubblepadApp:
         if not self.window.isVisible():
             return
         playing = self.engine.playing()
-        data = {"levels": self.engine.levels(), "playing": sorted(playing)}
+        data = {"levels": self.engine.levels(), "playing": sorted(playing), "pos": self.engine.positions()}
         self.bridge.levels.emit(json.dumps(data, ensure_ascii=False))
 
 

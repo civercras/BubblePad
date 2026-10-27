@@ -473,6 +473,31 @@ class Engine:
     def playing(self):
         return self.cable.playing() | self.monitor.playing()
 
+    def positions(self):
+        """Avance (0..1) de cada sonido que suena, para la barra de progreso de la lista."""
+        out = {}
+        for sink in (self.monitor, self.cable):
+            with sink.lock:
+                for v in sink.voices:
+                    if v.sid != "__preview__" and len(v.data):
+                        out[v.sid] = max(out.get(v.sid, 0.0), min(1.0, v.pos / len(v.data)))
+        return out
+
+    def mini_wave(self, sid, n=64):
+        """Forma de onda reducida (n picos 0..1) y duración, ya con el recorte aplicado."""
+        rate = 8000
+        mono = self._decoded(sid, rate, 1)[:, 0]
+        a, b = self.trims.get(sid, (0.0, None))
+        mono = mono[int(a * rate): None if b is None else int(b * rate)]
+        dur = len(mono) / rate
+        if not len(mono):
+            return {"peaks": [0] * n, "dur": 0}
+        k = max(1, len(mono) // n)
+        m = mono[:k * n] if len(mono) >= k * n else np.pad(mono, (0, k * n - len(mono)))
+        peaks = np.abs(m.reshape(n, k)).max(axis=1)
+        top = float(peaks.max()) or 1.0
+        return {"peaks": [round(float(x / top), 3) for x in peaks], "dur": round(dur, 2)}
+
     def levels(self):
         lv = {"mic": 0.0 if self.mic_muted else min(1.0, self.mic_peak * self.vol_mic),
               "call": min(1.0, self.cable.peak), "me": min(1.0, self.monitor.peak)}

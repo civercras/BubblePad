@@ -7,7 +7,7 @@ Mixes your real mic and your sound effects into <b>one virtual microphone</b>, s
 
 <p align="center"><a href="#english">English</a> · <a href="#español">Español</a></p>
 
-<p align="center"><img src="docs/day.png" width="760" alt="Bubblepad soundboard: day theme"></p>
+<p align="center"><img src="docs/day.png" width="760" alt="Bubblepad soundboard: Chrome look"></p>
 
 ---
 
@@ -33,13 +33,15 @@ If you have ever searched for *"how to play sounds through my mic"*, *"soundboar
 - ⌨ **Global hotkeys**: work while the window is minimized or hidden in the tray (Ctrl/Alt/Shift combos, F-keys, numpad)
 - ✂ **Trim editor** with waveform and **one-click silence removal** (non-destructive, your files are never modified)
 - 🔊 Separate volumes for your voice, sounds in the call and sounds for you
-- 🌙 **Day / night themes** with an animated sunset, Casio-style LCD with live meters
+- 💿 **Two looks**: *Chrome*, a 2000s media-player skin with a playlist and real waveforms, and *Aqua*, the Frutiger bubbles
+- 🌙 **Day / night** in both (graphite & amber at night), Casio-style LCD with live meters
 - 🫧 Tray icon, mute button, stop-all, search, sort by hotkey, resizable window (80–120 %)
 - 🌍 English and Spanish
 - 🔌 One-click VB-CABLE setup if it's missing
 - 🛡 Auto-recovers if your headset sleeps or reconnects
 
-<p align="center"><img src="docs/trim.png" width="49%" alt="Trim editor with waveform"> <img src="docs/night.png" width="49%" alt="Night theme"></p>
+<p align="center"><img src="docs/night.png" width="49%" alt="Chrome look at night"> <img src="docs/aqua.png" width="49%" alt="Aqua look"></p>
+<p align="center"><img src="docs/trim.png" width="60%" alt="Trim editor with waveform"></p>
 
 <p align="center"><img src="docs/connections.png" width="760" alt="Connections panel: microphone, pad, call and headphones joined by cables"></p>
 
@@ -88,7 +90,8 @@ Si alguna vez has buscado *"cómo poner sonidos por el micro en Discord"*, *"sou
 - ⌨ Atajos de teclado globales, también con la ventana minimizada o escondida
 - ✂ Editor de recorte con forma de onda y botón para **quitar silencios** (sin tocar el archivo original)
 - 🔊 Volúmenes separados: tu voz, sonidos en llamada y sonidos para ti
-- 🌙 Tema de día y de noche con atardecer animado, pantalla LCD estilo Casio
+- 💿 Dos aspectos: *Chrome* (reproductor de los 2000, lista con ondas reales) y *Aqua* (burbujas Frutiger)
+- 🌙 Día y noche en ambos, pantalla LCD estilo Casio
 - 🫧 Icono en la bandeja, silenciar micro, parar todo, búsqueda, orden por atajos, ventana redimensionable
 - 🌍 Español e inglés
 

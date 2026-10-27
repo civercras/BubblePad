@@ -50,7 +50,7 @@ def load():
     cfg["hotkeys"] = dict(cfg["hotkeys"])
     cfg["trims"] = dict(cfg.get("trims") or {})
     ui = cfg.get("ui") if isinstance(cfg.get("ui"), dict) else {}
-    cfg["ui"] = {"lang": "", "theme": "day", "sort_hotkeys": True, "scale": 1.0, **ui}
+    cfg["ui"] = {"lang": "", "skin": "chrome", "theme": "day", "sort_hotkeys": True, "scale": 1.0, **ui}
     return cfg
 
 
