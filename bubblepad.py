@@ -120,6 +120,29 @@ def set_autostart(on):
         return False
 
 
+# ── páginas de sonidos ──
+# Cada subcarpeta de la carpeta de sonidos es una página. Los sonidos sueltos van en la página
+# principal. El id de un sonido es "archivo.mp3" o "Página/archivo.mp3".
+BAD_NAME = '\\/:*?"<>|'
+
+
+def sound_path(sid):
+    return os.path.join(config.SOUNDS_DIR, *sid.split("/"))
+
+
+def page_of(sid):
+    return sid.split("/")[0] if "/" in sid else ""
+
+
+def clean_page_name(name):
+    name = "".join(c for c in (name or "") if c not in BAD_NAME and ord(c) >= 32).strip(" .").lstrip("._")
+    return name[:32]
+
+
+def page_dir(page):
+    return os.path.join(config.SOUNDS_DIR, page) if page else config.SOUNDS_DIR
+
+
 def bubble_icon(muted=False):
     """Icono de la app (burbuja aqua); en gris cuando el micro está silenciado."""
     img = QPixmap(ICON_PATH).toImage() if os.path.exists(ICON_PATH) else None
@@ -214,6 +237,8 @@ class Bridge(QObject):
             ui["skin"] = "aqua" if value == "aqua" else "chrome"
         elif key == "admin_on_start":
             ui["admin_on_start"] = value == "1"
+        elif key == "page":
+            ui["page"] = value if value in self.app.pages else ""
         elif key == "autostart":
             set_autostart(value == "1")
             self.app.push_state()
@@ -289,8 +314,22 @@ class Bridge(QObject):
 
     @Slot()
     def openFolder(self):
-        os.makedirs(config.SOUNDS_DIR, exist_ok=True)
-        os.startfile(config.SOUNDS_DIR) if hasattr(os, "startfile") else None
+        page = self.app.cfg["ui"].get("page", "")
+        d = page_dir(page if page in self.app.pages else "")
+        os.makedirs(d, exist_ok=True)
+        os.startfile(d) if hasattr(os, "startfile") else None
+
+    @Slot(str)
+    def newPage(self, name):
+        self.app.new_page(name)
+
+    @Slot(str)
+    def deletePage(self, page):
+        self.app.delete_page(page)
+
+    @Slot(str, str)
+    def moveSound(self, sid, page):
+        self.app.move_sound(sid, page)
 
     @Slot(str)
     def deleteSound(self, sid):
@@ -407,6 +446,7 @@ class BubblepadApp:
         self.bridge = Bridge(self)
         self.inputs, self.outputs = [], []
         self.sounds = []
+        self.pages = []
 
         self.refresh_devices()
         mic, cable, monitor = default_devices()
@@ -512,7 +552,7 @@ class BubblepadApp:
         try:
             if restart:
                 self.engine.restart_audio()
-                self.engine.set_sounds({f: os.path.join(config.SOUNDS_DIR, f) for f in self.sounds})
+                self.engine.set_sounds({f: sound_path(f) for f in self.sounds})
             self.inputs, self.outputs = list_devices()
         except Exception as e:
             log_error(f"Dispositivos: {e}")
@@ -529,8 +569,10 @@ class BubblepadApp:
         self.push_state()
 
     def delete_sound(self, sid):
-        path = os.path.join(config.SOUNDS_DIR, sid)
-        if os.path.dirname(os.path.abspath(path)) != os.path.abspath(config.SOUNDS_DIR) or not os.path.isfile(path):
+        if sid not in self.sounds:
+            return
+        path = sound_path(sid)
+        if not os.path.isfile(path):
             return
         self.engine.stop(sid)
         try:
@@ -551,14 +593,78 @@ class BubblepadApp:
         self.scan_sounds()
         self.apply_hotkeys()
         self.push_state()
-        self.bridge.notice.emit(t(msg_key, name=os.path.splitext(sid)[0]))
+        self.bridge.notice.emit(t(msg_key, name=os.path.splitext(os.path.basename(sid))[0]))
 
     def scan_sounds(self):
         os.makedirs(config.SOUNDS_DIR, exist_ok=True)
-        files = sorted((f for f in os.listdir(config.SOUNDS_DIR) if f.lower().endswith(AUDIO_EXT)),
-                       key=str.lower)
-        self.sounds = files
-        self.engine.set_sounds({f: os.path.join(config.SOUNDS_DIR, f) for f in files})
+        root = config.SOUNDS_DIR
+        sids, pages = [], []
+        for f in sorted(os.listdir(root), key=str.lower):
+            full = os.path.join(root, f)
+            if os.path.isfile(full) and f.lower().endswith(AUDIO_EXT):
+                sids.append(f)
+            elif os.path.isdir(full) and not f.startswith((".", "_")):
+                pages.append(f)
+                for g in sorted(os.listdir(full), key=str.lower):
+                    if g.lower().endswith(AUDIO_EXT) and os.path.isfile(os.path.join(full, g)):
+                        sids.append(f + "/" + g)
+        self.sounds = sids
+        self.pages = pages
+        if self.cfg["ui"].get("page") and self.cfg["ui"]["page"] not in pages:
+            self.cfg["ui"]["page"] = ""
+        self.engine.set_sounds({f: sound_path(f) for f in sids})
+
+    # páginas
+    def new_page(self, name):
+        name = clean_page_name(name)
+        if not name:
+            return
+        os.makedirs(page_dir(name), exist_ok=True)
+        self.cfg["ui"]["page"] = name
+        config.save(self.cfg)
+        self.scan_sounds()
+        self.push_state()
+
+    def delete_page(self, page):
+        if not page or page not in self.pages:
+            return
+        try:
+            os.rmdir(page_dir(page))         # solo si está vacía: los sonidos nunca se borran así
+        except OSError:
+            self.bridge.notice.emit(t("page_not_empty", name=page))
+            return
+        if self.cfg["ui"].get("page") == page:
+            self.cfg["ui"]["page"] = ""
+        config.save(self.cfg)
+        self.scan_sounds()
+        self.push_state()
+
+    def move_sound(self, sid, page):
+        if sid not in self.sounds or (page and page not in self.pages) or page_of(sid) == page:
+            return
+        base = sid.split("/")[-1]
+        new = (page + "/" + base) if page else base
+        dest = sound_path(new)
+        if os.path.exists(dest):
+            self.bridge.notice.emit(t("move_exists", name=os.path.splitext(base)[0]))
+            return
+        self.engine.stop(sid)
+        try:
+            shutil.move(sound_path(sid), dest)
+        except OSError as e:
+            self.bridge.notice.emit(t("delete_fail", err=e))
+            return
+        hk, tr = self.cfg["hotkeys"], self.cfg["trims"]
+        if "play:" + sid in hk:
+            hk["play:" + new] = hk.pop("play:" + sid)
+        if sid in tr:
+            tr[new] = tr.pop(sid)
+        if sid in self.engine.trims:
+            self.engine.trims[new] = self.engine.trims.pop(sid)
+        config.save(self.cfg)
+        self.scan_sounds()
+        self.apply_hotkeys()
+        self.push_state()
 
     def state(self):
         e = self.engine
@@ -568,7 +674,9 @@ class BubblepadApp:
             "vol_mic": e.vol_mic, "vol_call": e.vol_call, "vol_me": e.vol_me,
             "mic_muted": e.mic_muted,
             "denoise": e.denoise_on, "denoise_ok": denoise_available(),
-            "sounds": [{"id": s, "name": os.path.splitext(s)[0]} for s in self.sounds],
+            "sounds": [{"id": s, "name": os.path.splitext(s.split("/")[-1])[0], "page": page_of(s)}
+                       for s in self.sounds],
+            "pages": self.pages,
             "errors": e.errors,
             "hotkeys": self.cfg["hotkeys"],
             "trims": self.cfg["trims"],
@@ -592,7 +700,7 @@ class BubblepadApp:
             return
         self.cfg[kind] = name
         config.save(self.cfg)
-        self.engine.set_sounds({f: os.path.join(config.SOUNDS_DIR, f) for f in self.sounds})
+        self.engine.set_sounds({f: sound_path(f) for f in self.sounds})
         self.push_state()
 
     def set_volume(self, kind, value):
@@ -691,15 +799,18 @@ class BubblepadApp:
         if not self.window.isVisible():
             self.tray.showMessage("Bubblepad", msg, QSystemTrayIcon.Warning, 4000)
 
-    def add_sounds(self):
+    def add_sounds(self, page=None):
         files, _ = QFileDialog.getOpenFileNames(
             self.window, t("add_title"), os.path.expanduser("~"),
             "Audio (*.mp3 *.wav *.ogg *.flac)")
         if not files:
             return
-        os.makedirs(config.SOUNDS_DIR, exist_ok=True)
+        if page is None:
+            page = self.cfg["ui"].get("page", "")
+        target = page_dir(page if page in self.pages else "")
+        os.makedirs(target, exist_ok=True)
         for f in files:
-            dest = os.path.join(config.SOUNDS_DIR, os.path.basename(f))
+            dest = os.path.join(target, os.path.basename(f))
             if os.path.abspath(f) != os.path.abspath(dest):
                 shutil.copy2(f, dest)
         self.scan_sounds()

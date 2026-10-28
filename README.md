@@ -30,7 +30,9 @@ If you have ever searched for *"how to play sounds through my mic"*, *"soundboar
 - 🎧 **You hear the sounds too**, but not your own voice
 - 🧹 **Built-in noise reduction** for your voice (RNNoise), so you can switch off Discord's, which would filter out your sounds
 - 🔌 **Visual connections panel**: see your mic, the pad, the call and your headphones joined by cables, and click any of them to pick the device
-- ⌨ **Global hotkeys**: work while the window is minimized or hidden in the tray (Ctrl/Alt/Shift combos, F-keys, numpad)
+- ⌨ **Global hotkeys**: work while the window is minimized or hidden in the tray, and inside games like League of Legends (Ctrl/Alt/Shift combos, F-keys, numpad)
+- 📑 **Sound pages**: each subfolder of your sounds folder is a page; drag a sound onto a tab to move it. Hotkeys work on every page
+- 🚀 **Starts with Windows** (optional), hidden in the tray, so the virtual mic is always ready
 - ✂ **Trim editor** with waveform and **one-click silence removal** (non-destructive, your files are never modified)
 - 🔊 Separate volumes for your voice, sounds in the call and sounds for you
 - 💿 **Two looks**: *Chrome*, a 2000s media-player skin with a playlist and real waveforms, and *Aqua*, the Frutiger bubbles
@@ -70,7 +72,7 @@ Built with Python, PySide6 (Qt WebEngine for the UI), sounddevice/PortAudio (WAS
 - **People hear my sounds but I don't** → check "I listen on" in ⚙ and the *Sounds for me* slider.
 - **Sounds play but nobody hears them** → Discord's input must be *CABLE Output*, and noise suppression off.
 - **Why can't Discord's noise suppression stay on?** It only sees one microphone, so it can't tell your sounds from background noise and filters them out. Bubblepad cleans your voice *before* mixing it with the sounds, so you get the same result without losing your effects.
-- **Hotkeys don't work inside a game (e.g. League of Legends)** → the game runs as administrator, so Windows blocks its keystrokes from reaching normal apps. In ⚙ → *Games*, press **Restart as administrator** (or tick *Always open as administrator*).
+- **Hotkeys don't work inside a game** → Bubblepad already handles games that block app shortcuts (like League of Legends). If the game runs as administrator, Windows also blocks its keystrokes from reaching normal apps: in ⚙ → *Games*, press **Restart as administrator** (or tick *Always open as administrator*).
 - **A hotkey doesn't work anywhere** → another app already uses that combination; Bubblepad will tell you.
 
 ---
@@ -87,7 +89,9 @@ Si alguna vez has buscado *"cómo poner sonidos por el micro en Discord"*, *"sou
 - 🎧 Tú también oyes los sonidos (pero no tu voz)
 - 🧹 **Reducción de ruido integrada** para tu voz (RNNoise): puedes quitar la de Discord, que filtraría tus sonidos
 - 🔌 **Panel de conexiones visual**: micro, pad, llamada y cascos unidos por cables; pulsa cualquiera para elegir el dispositivo
-- ⌨ Atajos de teclado globales, también con la ventana minimizada o escondida
+- ⌨ Atajos de teclado globales, también con la ventana minimizada o escondida y dentro de juegos como League of Legends
+- 📑 **Páginas de sonidos**: cada subcarpeta de tu carpeta de sonidos es una página; arrastra un sonido a una pestaña para moverlo. Los atajos funcionan en todas
+- 🚀 **Arranque con Windows** (opcional), escondido en la bandeja: el micro virtual siempre listo
 - ✂ Editor de recorte con forma de onda y botón para **quitar silencios** (sin tocar el archivo original)
 - 🔊 Volúmenes separados: tu voz, sonidos en llamada y sonidos para ti
 - 💿 Dos aspectos: *Chrome* (reproductor de los 2000, lista con ondas reales) y *Aqua* (burbujas Frutiger)
