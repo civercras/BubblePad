@@ -238,7 +238,8 @@ class Bridge(QObject):
         elif key == "admin_on_start":
             ui["admin_on_start"] = value == "1"
         elif key == "page":
-            ui["page"] = value if value in self.app.pages else ""
+            self.app.switch_page(value)
+            return
         elif key == "autostart":
             set_autostart(value == "1")
             self.app.push_state()
@@ -623,6 +624,7 @@ class BubblepadApp:
         self.cfg["ui"]["page"] = name
         config.save(self.cfg)
         self.scan_sounds()
+        self.apply_hotkeys()
         self.push_state()
 
     def delete_page(self, page):
@@ -635,8 +637,10 @@ class BubblepadApp:
             return
         if self.cfg["ui"].get("page") == page:
             self.cfg["ui"]["page"] = ""
+        self.cfg["hotkeys"].pop("goto:" + page, None)
         config.save(self.cfg)
         self.scan_sounds()
+        self.apply_hotkeys()
         self.push_state()
 
     def move_sound(self, sid, page):
@@ -656,7 +660,12 @@ class BubblepadApp:
             return
         hk, tr = self.cfg["hotkeys"], self.cfg["trims"]
         if "play:" + sid in hk:
-            hk["play:" + new] = hk.pop("play:" + sid)
+            combo = hk.pop("play:" + sid)
+            taken = any(c == combo and (not a.startswith("play:") or page_of(a[5:]) == page) for a, c in hk.items())
+            if taken:          # en la página nueva esa tecla ya es de otro sonido: se queda sin atajo
+                self.bridge.notice.emit(t("move_hk_lost", name=os.path.splitext(base)[0]))
+            else:
+                hk["play:" + new] = combo
         if sid in tr:
             tr[new] = tr.pop(sid)
         if sid in self.engine.trims:
@@ -767,16 +776,40 @@ class BubblepadApp:
         self.push_state()
 
     # ── atajos ──
+    # Atajos por página: los de sonidos solo funcionan en su página (la misma tecla puede tocar
+    # un sonido distinto en cada una). Parar, silenciar y cambiar de página funcionan siempre.
+    def _hk_valid(self, action):
+        if action.startswith("play:"):
+            return action[5:] in self.sounds
+        if action.startswith("goto:"):
+            return action[5:] == "" or action[5:] in self.pages
+        return action in ("stop", "mute", "page:next", "page:prev")
+
     def apply_hotkeys(self, paused=False):
         hk = self.cfg["hotkeys"]
+        cur = self.cfg["ui"].get("page", "")
         valid = {a: c for a, c in hk.items()
-                 if c and (not a.startswith("play:") or a[5:] in self.sounds)}
+                 if c and self._hk_valid(a) and (not a.startswith("play:") or page_of(a[5:]) == cur)}
         self.hotkeys.set_bindings({} if paused else {c: a for a, c in valid.items()})
+
+    def switch_page(self, page, cue=False):
+        page = page if page in self.pages else ""
+        self.cfg["ui"]["page"] = page
+        config.save(self.cfg)
+        self.apply_hotkeys()
+        self.push_state()
+        if cue:
+            self.engine.cue((([""] + self.pages).index(page)) + 1)
 
     def set_hotkey(self, action, combo):
         hk = self.cfg["hotkeys"]
         if combo:
-            for a in [a for a, c in hk.items() if c == combo]:   # una combinación = una acción
+            def scope(a):
+                return page_of(a[5:]) if a.startswith("play:") else None   # None = en todas las páginas
+            mine = scope(action)
+            # una combinación = una acción (dentro de la misma página, o en todas si es general)
+            for a in [a for a, c in hk.items()
+                      if c == combo and (mine is None or scope(a) is None or scope(a) == mine)]:
                 del hk[a]
             hk[action] = combo
         else:
@@ -792,6 +825,12 @@ class BubblepadApp:
             self.engine.stop()
         elif action == "mute":
             self.toggle_mute()
+        elif action.startswith("goto:"):
+            self.switch_page(action[5:], cue=True)
+        elif action in ("page:next", "page:prev"):
+            order = [""] + self.pages
+            i = order.index(self.cfg["ui"].get("page", "")) if self.cfg["ui"].get("page", "") in order else 0
+            self.switch_page(order[(i + (1 if action == "page:next" else -1)) % len(order)], cue=True)
 
     def _on_hotkey_failed(self, combos):
         msg = t("hk_taken", combos=combos.replace(",", ", ").replace("+", " + "))

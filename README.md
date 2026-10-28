@@ -31,7 +31,7 @@ If you have ever searched for *"how to play sounds through my mic"*, *"soundboar
 - 🧹 **Built-in noise reduction** for your voice (RNNoise), so you can switch off Discord's, which would filter out your sounds
 - 🔌 **Visual connections panel**: see your mic, the pad, the call and your headphones joined by cables, and click any of them to pick the device
 - ⌨ **Global hotkeys**: work while the window is minimized or hidden in the tray, and inside games like League of Legends (Ctrl/Alt/Shift combos, F-keys, numpad)
-- 📑 **Sound pages**: each subfolder of your sounds folder is a page; drag a sound onto a tab to move it. Hotkeys work on every page
+- 📑 **Sound pages**: each subfolder of your sounds folder is a page; drag a sound onto a tab to move it. Each page has its own sound hotkeys, so a few keys can play many sounds; switch page with your own hotkeys (e.g. F1, F2…) and hear a short beep only you can hear
 - 🚀 **Starts with Windows** (optional), hidden in the tray, so the virtual mic is always ready
 - ✂ **Trim editor** with waveform and **one-click silence removal** (non-destructive, your files are never modified)
 - 🔊 Separate volumes for your voice, sounds in the call and sounds for you
@@ -90,7 +90,7 @@ Si alguna vez has buscado *"cómo poner sonidos por el micro en Discord"*, *"sou
 - 🧹 **Reducción de ruido integrada** para tu voz (RNNoise): puedes quitar la de Discord, que filtraría tus sonidos
 - 🔌 **Panel de conexiones visual**: micro, pad, llamada y cascos unidos por cables; pulsa cualquiera para elegir el dispositivo
 - ⌨ Atajos de teclado globales, también con la ventana minimizada o escondida y dentro de juegos como League of Legends
-- 📑 **Páginas de sonidos**: cada subcarpeta de tu carpeta de sonidos es una página; arrastra un sonido a una pestaña para moverlo. Los atajos funcionan en todas
+- 📑 **Páginas de sonidos**: cada subcarpeta de tu carpeta de sonidos es una página; arrastra un sonido a una pestaña para moverlo. Cada página tiene sus propios atajos, así con pocas teclas tienes muchos sonidos; cambia de página con tus atajos (p. ej. F1, F2…) y oirás un pitido que solo oyes tú
 - 🚀 **Arranque con Windows** (opcional), escondido en la bandeja: el micro virtual siempre listo
 - ✂ Editor de recorte con forma de onda y botón para **quitar silencios** (sin tocar el archivo original)
 - 🔊 Volúmenes separados: tu voz, sonidos en llamada y sonidos para ti

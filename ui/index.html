@@ -797,7 +797,7 @@ html.skin-chrome.night .patch-head h3{font:400 12px "Pix";letter-spacing:1px}
 .pages{flex:1;min-width:0;display:flex;gap:2px;align-items:center;overflow-x:auto;scrollbar-width:none;margin-left:-8px;padding:2px 0}
 .pages.over{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 18px),transparent)}
 .ptab.edit{padding:0 4px;cursor:default;display:flex;align-items:center}
-.search{width:104px !important;transition:width .2s}
+.search{width:88px !important;transition:width .2s}
 .search:focus,.search:not(:placeholder-shown){width:160px !important}
 .pages::-webkit-scrollbar{display:none}
 .ptab{flex:none;height:28px;padding:0 9px;border:none;border-radius:14px;cursor:pointer;white-space:nowrap;
@@ -806,6 +806,9 @@ html.skin-chrome.night .patch-head h3{font:400 12px "Pix";letter-spacing:1px}
 .ptab:hover{background:rgba(255,255,255,.18);color:#fff}
 .ptab.on{color:#fff;background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.18));box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 1px 4px rgba(0,40,100,.25)}
 .ptab.add{padding:0 10px;letter-spacing:0;font-size:15px}
+.ptab .pk{margin-left:6px;padding:1px 5px;border-radius:6px;font-size:9px;letter-spacing:0;background:rgba(255,255,255,.22);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+html.skin-chrome .ptab .pk{font:400 14px/1 "VT";background:rgba(0,20,60,.45);box-shadow:inset 0 0 0 1px rgba(170,215,255,.35);text-transform:none}
+html.skin-chrome.night .ptab .pk{background:rgba(40,20,0,.45);box-shadow:inset 0 0 0 1px rgba(255,190,110,.35)}
 .ptab.drop{background:rgba(120,230,140,.45);color:#fff;box-shadow:0 0 0 2px rgba(150,255,170,.8)}
 .ptab.ask{background:rgba(255,90,80,.55);color:#fff}
 .ptab input{width:110px;height:22px;border:none;outline:none;border-radius:11px;padding:0 8px;font:12px "Segoe UI";background:var(--field);color:var(--field-ink)}
@@ -949,6 +952,9 @@ html.skin-chrome.night .ptab input{background:rgba(40,20,0,.55);color:#ffd9a8;bo
     <div class="blk">
       <div class="hk-row"><span data-i18n="stop_all">Parar todos los sonidos</span><span class="key" data-action="stop"></span></div>
       <div class="hk-row"><span data-i18n="mute_toggle">Silenciar / activar micro</span><span class="key" data-action="mute"></span></div>
+      <div class="hk-row"><span data-i18n="page_next">Página siguiente</span><span class="key" data-action="page:next"></span></div>
+      <div class="hk-row"><span data-i18n="page_prev">Página anterior</span><span class="key" data-action="page:prev"></span></div>
+      <div class="small" data-i18n="pages_hk_help"></div>
     </div>
     <h3 data-i18n="boot_title">AL ENCENDER EL PC</h3>
     <div class="blk">
@@ -1020,6 +1026,12 @@ html.skin-chrome.night .ptab input{background:rgba(40,20,0,.55);color:#ffd9a8;bo
 </div>
 </div>
 
+<div class="menu" id="pmenu">
+  <button data-pm="hotkey" data-i18n="pm_hotkey">⌨ Atajo para ir a esta página…</button>
+  <button data-pm="unhotkey" data-i18n="m_unhotkey">✕ Quitar atajo</button>
+  <hr class="pm-del">
+  <button data-pm="delete" class="danger pm-del" data-i18n="pm_delete">✕ Borrar página</button>
+</div>
 <div class="menu" id="menu">
   <button data-m="play" data-i18n="m_play">▶ Reproducir</button>
   <button data-m="hotkey" data-i18n="m_hotkey">⌨ Asignar atajo…</button>
@@ -1084,7 +1096,7 @@ function decorate(){
 
 /* ═════════ IDIOMAS ═════════ */
 const I18N={
- es:{page_main:'Sonidos',page_main_tip:'Página principal: los sonidos sueltos de tu carpeta',page_tip:'Arrastra aquí un sonido para moverlo · clic derecho para borrar la página (si está vacía)',page_new:'Nueva página',page_name:'Nombre…',page_del:'¿Borrar?',page_empty:'Página vacía. Añade sonidos con <b>+</b> o arrástralos aquí desde otra página.',skin_title:'ASPECTO',skin_chrome:'Chrome',skin_aqua:'Aqua (clásico)',lh_sound:'SONIDO',lh_wave:'ONDA',lh_dur:'DUR',lh_key:'ATAJO',list_hk:'+ atajo',cc_title:'Falta el micro virtual',cc_title_ok:'VB-CABLE instalado',cc_text:'Bubblepad necesita <b>VB-CABLE</b> (gratis, de VB-Audio) para que Discord y los juegos oigan tus sonidos. Se descarga de su web oficial y se abre su instalador: ahí pulsa <b>Install Driver</b>.',cc_install:'Instalar VB-CABLE',cc_web:'Web oficial',cc_dl:'DESCARGANDO {p}%',cc_ex:'PREPARANDO',cc_inst:'INSTALADOR ABIERTO',cc_inst_text:'Se ha abierto el instalador de VB-CABLE. Acepta el aviso de Windows y pulsa <b>Install Driver</b>.',cc_done:'¡Instalado! Reinicia el PC para terminar; después Bubblepad lo usará solo.',cc_restart:'Reiniciar ahora',cc_later:'Más tarde',cc_cancel:'Instalación cancelada. Puedes volver a intentarlo cuando quieras.',cc_err:'No se ha podido descargar ({e}). Prueba desde la web oficial.',cc_retry:'Reintentar',cc_hide:'Ocultar',games_title:'JUEGOS',boot_title:'AL ENCENDER EL PC',boot_start:'Abrir Bubblepad al encender el PC',boot_help:'Se abre escondido en la bandeja, así el micro virtual siempre está listo para Discord. Si además está marcado «Abrir siempre como administrador», Windows pedirá permiso al arrancar.',games_help:'Los atajos ya funcionan dentro de juegos como League of Legends. Si algún juego que se abre como administrador no los recibe, reinicia Bubblepad como administrador.',admin_btn:'Reiniciar como administrador',admin_on:'✓ Funcionando como administrador',admin_start:'Abrir siempre como administrador',vu_me:'YO',idle:'SILENCIO',add:'Añadir sonidos',folder:'Carpeta de sonidos',refresh:'Actualizar dispositivos y sonidos',settings:'Audio, atajos e idioma',
+ es:{page_main:'Sonidos',page_main_tip:'Página principal: los sonidos sueltos de tu carpeta · clic derecho: atajo',page_tip:'Arrastra aquí un sonido para moverlo · clic derecho: atajo o borrar',pm_hotkey:'⌨ Atajo para ir a esta página…',pm_delete:'✕ Borrar página (si está vacía)',page_next:'Página siguiente',page_prev:'Página anterior',pages_hk_help:'Cada página tiene sus propios atajos de sonido: la misma tecla puede tocar un sonido distinto en cada una. Al cambiar de página con un atajo oirás unos pitidos solo tú (uno por la primera página, dos por la segunda…). Para ponerle atajo a una página: clic derecho en su pestaña.',page_new:'Nueva página',page_name:'Nombre…',page_del:'¿Borrar?',page_empty:'Página vacía. Añade sonidos con <b>+</b> o arrástralos aquí desde otra página.',skin_title:'ASPECTO',skin_chrome:'Chrome',skin_aqua:'Aqua (clásico)',lh_sound:'SONIDO',lh_wave:'ONDA',lh_dur:'DUR',lh_key:'ATAJO',list_hk:'+ atajo',cc_title:'Falta el micro virtual',cc_title_ok:'VB-CABLE instalado',cc_text:'Bubblepad necesita <b>VB-CABLE</b> (gratis, de VB-Audio) para que Discord y los juegos oigan tus sonidos. Se descarga de su web oficial y se abre su instalador: ahí pulsa <b>Install Driver</b>.',cc_install:'Instalar VB-CABLE',cc_web:'Web oficial',cc_dl:'DESCARGANDO {p}%',cc_ex:'PREPARANDO',cc_inst:'INSTALADOR ABIERTO',cc_inst_text:'Se ha abierto el instalador de VB-CABLE. Acepta el aviso de Windows y pulsa <b>Install Driver</b>.',cc_done:'¡Instalado! Reinicia el PC para terminar; después Bubblepad lo usará solo.',cc_restart:'Reiniciar ahora',cc_later:'Más tarde',cc_cancel:'Instalación cancelada. Puedes volver a intentarlo cuando quieras.',cc_err:'No se ha podido descargar ({e}). Prueba desde la web oficial.',cc_retry:'Reintentar',cc_hide:'Ocultar',games_title:'JUEGOS',boot_title:'AL ENCENDER EL PC',boot_start:'Abrir Bubblepad al encender el PC',boot_help:'Se abre escondido en la bandeja, así el micro virtual siempre está listo para Discord. Si además está marcado «Abrir siempre como administrador», Windows pedirá permiso al arrancar.',games_help:'Los atajos ya funcionan dentro de juegos como League of Legends. Si algún juego que se abre como administrador no los recibe, reinicia Bubblepad como administrador.',admin_btn:'Reiniciar como administrador',admin_on:'✓ Funcionando como administrador',admin_start:'Abrir siempre como administrador',vu_me:'YO',idle:'SILENCIO',add:'Añadir sonidos',folder:'Carpeta de sonidos',refresh:'Actualizar dispositivos y sonidos',settings:'Audio, atajos e idioma',
   your_voice:'Tu voz',sounds_call:'Sonidos en llamada',sounds_me:'Sonidos para mí',stop_all_esc:'Parar todos los sonidos (Esc)',stop_all_short:'Parar todo',
   mute_tip:'Activar / silenciar tu micrófono',sounds_title:'SONIDOS',search:'Buscar…',sort_tip:'Sonidos con atajo primero',theme_tip:'Día / noche',
   minimize:'Minimizar',hide_tray:'Esconder en la bandeja',ed_play:'Escuchar la selección en tus cascos (Espacio)',ed_stop:'Parar',
@@ -1103,7 +1115,7 @@ const I18N={
   del_q:'¿Eliminar «{n}»?',loading:'CARGANDO',unreadable:'NO SE PUEDE LEER',auto_done:'Silencios quitados: {a} → {b}',
   trim_saved:'Recorte guardado (el archivo original no se toca)',size:'TAMAÑO',grip:'Arrastra para cambiar el tamaño · doble clic: 100% · también Ctrl + rueda',
   keys:{ctrl:'Ctrl',alt:'Alt',shift:'Mayús',win:'Win',Space:'Espacio',Enter:'Intro',Backspace:'Retroceso',Delete:'Supr',Home:'Inicio',End:'Fin',PageUp:'RePág',PageDown:'AvPág',Pause:'Pausa',ScrollLock:'BloqDespl',PrintScreen:'ImprPant'}},
- en:{page_main:'Sounds',page_main_tip:'Main page: the loose sounds in your folder',page_tip:'Drop a sound here to move it · right-click to delete the page (if empty)',page_new:'New page',page_name:'Name…',page_del:'Delete?',page_empty:'Empty page. Add sounds with <b>+</b> or drag them here from another page.',skin_title:'LOOK',skin_chrome:'Chrome',skin_aqua:'Aqua (classic)',lh_sound:'SOUND',lh_wave:'WAVE',lh_dur:'DUR',lh_key:'HOTKEY',list_hk:'+ hotkey',cc_title:'Virtual mic missing',cc_title_ok:'VB-CABLE installed',cc_text:'Bubblepad needs <b>VB-CABLE</b> (free, by VB-Audio) so Discord and games can hear your sounds. It downloads from the official site and opens its installer: there, press <b>Install Driver</b>.',cc_install:'Install VB-CABLE',cc_web:'Official site',cc_dl:'DOWNLOADING {p}%',cc_ex:'PREPARING',cc_inst:'INSTALLER OPEN',cc_inst_text:'The VB-CABLE installer is open. Accept the Windows prompt and press <b>Install Driver</b>.',cc_done:'Installed! Restart your PC to finish; after that Bubblepad will use it automatically.',cc_restart:'Restart now',cc_later:'Later',cc_cancel:'Installation cancelled. You can try again any time.',cc_err:'Download failed ({e}). Try the official site.',cc_retry:'Retry',cc_hide:'Hide',games_title:'GAMES',boot_title:'WHEN YOUR PC STARTS',boot_start:'Open Bubblepad when your PC starts',boot_help:'It opens hidden in the tray, so the virtual mic is always ready for Discord. If “Always open as administrator” is also ticked, Windows will ask for permission at startup.',games_help:'Hotkeys already work inside games like League of Legends. If a game that runs as administrator doesn\'t get them, restart Bubblepad as administrator.',admin_btn:'Restart as administrator',admin_on:'✓ Running as administrator',admin_start:'Always open as administrator',vu_me:'ME',idle:'IDLE',add:'Add sounds',folder:'Sounds folder',refresh:'Refresh devices and sounds',settings:'Audio, hotkeys & language',
+ en:{page_main:'Sounds',page_main_tip:'Main page: the loose sounds in your folder · right-click: hotkey',page_tip:'Drop a sound here to move it · right-click: hotkey or delete',pm_hotkey:'⌨ Hotkey to go to this page…',pm_delete:'✕ Delete page (if empty)',page_next:'Next page',page_prev:'Previous page',pages_hk_help:'Each page has its own sound hotkeys: the same key can play a different sound on each page. When you switch page with a hotkey you\'ll hear short beeps only you can hear (one for the first page, two for the second…). To give a page a hotkey: right-click its tab.',page_new:'New page',page_name:'Name…',page_del:'Delete?',page_empty:'Empty page. Add sounds with <b>+</b> or drag them here from another page.',skin_title:'LOOK',skin_chrome:'Chrome',skin_aqua:'Aqua (classic)',lh_sound:'SOUND',lh_wave:'WAVE',lh_dur:'DUR',lh_key:'HOTKEY',list_hk:'+ hotkey',cc_title:'Virtual mic missing',cc_title_ok:'VB-CABLE installed',cc_text:'Bubblepad needs <b>VB-CABLE</b> (free, by VB-Audio) so Discord and games can hear your sounds. It downloads from the official site and opens its installer: there, press <b>Install Driver</b>.',cc_install:'Install VB-CABLE',cc_web:'Official site',cc_dl:'DOWNLOADING {p}%',cc_ex:'PREPARING',cc_inst:'INSTALLER OPEN',cc_inst_text:'The VB-CABLE installer is open. Accept the Windows prompt and press <b>Install Driver</b>.',cc_done:'Installed! Restart your PC to finish; after that Bubblepad will use it automatically.',cc_restart:'Restart now',cc_later:'Later',cc_cancel:'Installation cancelled. You can try again any time.',cc_err:'Download failed ({e}). Try the official site.',cc_retry:'Retry',cc_hide:'Hide',games_title:'GAMES',boot_title:'WHEN YOUR PC STARTS',boot_start:'Open Bubblepad when your PC starts',boot_help:'It opens hidden in the tray, so the virtual mic is always ready for Discord. If “Always open as administrator” is also ticked, Windows will ask for permission at startup.',games_help:'Hotkeys already work inside games like League of Legends. If a game that runs as administrator doesn\'t get them, restart Bubblepad as administrator.',admin_btn:'Restart as administrator',admin_on:'✓ Running as administrator',admin_start:'Always open as administrator',vu_me:'ME',idle:'IDLE',add:'Add sounds',folder:'Sounds folder',refresh:'Refresh devices and sounds',settings:'Audio, hotkeys & language',
   your_voice:'Your voice',sounds_call:'Sounds in call',sounds_me:'Sounds for me',stop_all_esc:'Stop all sounds (Esc)',stop_all_short:'Stop all',
   mute_tip:'Mute / unmute your microphone',sounds_title:'SOUNDS',search:'Search…',sort_tip:'Sounds with hotkeys first',theme_tip:'Day / night',
   minimize:'Minimize',hide_tray:'Hide to tray',ed_play:'Preview the selection in your headphones (Space)',ed_stop:'Stop',
@@ -1309,7 +1321,6 @@ function dragSound(el,s){
   el.ondragstart=e=>{ e.dataTransfer.setData('text/x-sound',s.id); e.dataTransfer.effectAllowed='move'; document.body.classList.add('dragging'); };
   el.ondragend=()=>document.body.classList.remove('dragging');
 }
-let askTimer=null;
 function renderPages(){
   const box=$('pages'); if(!box || box.querySelector('input')) return;
   box.innerHTML='';
@@ -1317,11 +1328,10 @@ function renderPages(){
   const all=['',...(S?.pages||[])];
   for(const p of all){
     const b=document.createElement('button'); b.className='ptab'+(p===PAGE?' on':'');
-    b.textContent=p||T('page_main'); b.title=p?T('page_tip'):T('page_main_tip');
-    b.onclick=()=>{ if(b.classList.contains('ask')){ clearTimeout(askTimer); bridge.deletePage(p); return; } setPage(p); };
-    if(p) b.oncontextmenu=e=>{ e.preventDefault();
-      b.classList.add('ask'); b.textContent='✕ '+T('page_del');
-      clearTimeout(askTimer); askTimer=setTimeout(()=>{ b.classList.remove('ask'); b.textContent=p; },3000); };
+    b.textContent=p||T('page_main'); b.title=T(p?'page_tip':'page_main_tip');
+    const hk=S.hotkeys['goto:'+p]; if(hk){ const k=document.createElement('span'); k.className='pk'; k.textContent=label(hk); b.appendChild(k); }
+    b.onclick=()=>setPage(p);
+    b.oncontextmenu=e=>{ e.preventDefault(); openPageMenu(e.clientX,e.clientY,p); };
     b.ondragover=e=>{ if([...e.dataTransfer.types].includes('text/x-sound')){ e.preventDefault(); b.classList.add('drop'); } };
     b.ondragleave=()=>b.classList.remove('drop');
     b.ondrop=e=>{ e.preventDefault(); b.classList.remove('drop'); const id=e.dataTransfer.getData('text/x-sound'); if(id) bridge.moveSound(id,p); };
@@ -1405,7 +1415,17 @@ function openMenu(x,y,s){
 let delSid=null;
 function askDelete(s){ closeMenu(); delSid=s; $('delTitle').textContent=T('del_q',{n:s.name}); $('delBg').classList.add('open'); }
 function closeDelete(){ delSid=null; $('delBg').classList.remove('open'); }
-function closeMenu(){$('menu').style.display='none';}
+function closeMenu(){$('menu').style.display='none'; $('pmenu').style.display='none';}
+let menuPage=null;
+function openPageMenu(x,y,p){
+  closeMenu(); menuPage=p; const m=$('pmenu'); m.style.display='block';
+  m.querySelector('[data-pm=unhotkey]').style.display=S.hotkeys['goto:'+p]?'flex':'none';
+  m.querySelectorAll('.pm-del').forEach(e=>e.style.display=p?'':'none');
+  m.style.left=Math.min(x,innerWidth-m.offsetWidth-10)+'px'; m.style.top=Math.min(y,innerHeight-m.offsetHeight-10)+'px';
+}
+// Los atajos de sonidos son de su página; los demás (parar, silenciar, páginas) valen en todas
+const hkScope=a=>a.startsWith('play:')?((S.sounds||[]).find(s=>s.id===a.slice(5))?.page||''):null;
+const hkClash=(a,b)=>{ const x=hkScope(a),y=hkScope(b); return x===null||y===null||x===y; };
 function openDrawer(on){ const d=$('drawer'); d.classList.toggle('open',on); $('settingsBtn').classList.toggle('on',on); }
 
 function openCapture(action,name){
@@ -1425,7 +1445,7 @@ function onCaptureKey(e){
   if(!VALID.test(e.code)){ $('capWarn').textContent=T('bad_key'); return; }
   if(!mods.length&&!SOLO_OK.test(e.code)){ showCombo([keyName(e.code)]); $('capWarn').textContent=T('need_mod'); return; }
   const combo=[...mods,e.code].join('+');
-  const other=Object.entries(S.hotkeys).find(([a,c])=>c===combo&&a!==capAction);
+  const other=Object.entries(S.hotkeys).find(([a,c])=>c===combo&&a!==capAction&&hkClash(a,capAction));
   showCombo(parts(combo));
   const action=capAction; closeCapture();
   bridge.setHotkey(action,combo);
@@ -1463,12 +1483,16 @@ function wire(){
     toast(T(SORT_HK?'sort_on':'sort_off')); };
   $('minBtn').onclick=()=>bridge.minimize(); $('closeBtn').onclick=()=>bridge.hideWindow();
   $('search').oninput=renderGrid;
-  document.querySelectorAll('.hk-row .key').forEach(k=>k.onclick=()=>openCapture(k.dataset.action));
+  document.querySelectorAll('.hk-row .key').forEach(k=>k.onclick=()=>openCapture(k.dataset.action,k.previousElementSibling.textContent));
   $('menu').onclick=e=>{const m=e.target.closest('button')?.dataset.m;if(!m||!menuSid)return;const s=menuSid;closeMenu();
     if(m==='play')bridge.play(s.id); if(m==='stop')bridge.stop(s.id);
     if(m==='trim')openEditor(s);
     if(m==='delete')askDelete(s);
     if(m==='hotkey')openCapture('play:'+s.id,s.name); if(m==='unhotkey')bridge.setHotkey('play:'+s.id,'');};
+  $('pmenu').onclick=e=>{const m=e.target.closest('button')?.dataset.pm; if(!m||menuPage===null) return; const p=menuPage; closeMenu();
+    if(m==='hotkey') openCapture('goto:'+p,p||T('page_main'));
+    if(m==='unhotkey') bridge.setHotkey('goto:'+p,'');
+    if(m==='delete') bridge.deletePage(p); };
   $('capCancel').onclick=closeCapture;
   $('delCancel').onclick=closeDelete;
   $('delOk').onclick=()=>{ const s=delSid; closeDelete(); if(s){ if(ED.sid===s.id) closeEditor(); bridge.deleteSound(s.id); } };
@@ -1718,12 +1742,12 @@ function mockBridge(){
   const st={inputs:['Micrófono (Realtek(R) Audio)','CABLE Output (VB-Audio Virtual Cable)'],
     outputs:['Altavoces (Realtek(R) Audio)','Auriculares (HyperX Cloud)','CABLE Input (VB-Audio Virtual Cable)'],
     mic:'Micrófono (Realtek(R) Audio)',cable:'CABLE Input (VB-Audio Virtual Cable)',monitor:'Auriculares (HyperX Cloud)',
-    vol_mic:1,vol_call:.8,vol_me:.6,mic_muted:false,denoise:true,denoise_ok:true,errors:{},cable_missing:location.hash==='#nocable',ui:{lang:(navigator.language||'es').slice(0,2),theme:'day',sort_hotkeys:true},trims:{'Boing':[0.1,0.7]},hotkeys:{'play:Ding':'ctrl+alt+Digit1','play:Bocina':'Numpad1','play:Airhorn':'Numpad1','stop':'ctrl+alt+Digit0'},
+    vol_mic:1,vol_call:.8,vol_me:.6,mic_muted:false,denoise:true,denoise_ok:true,errors:{},cable_missing:location.hash==='#nocable',ui:{lang:(navigator.language||'es').slice(0,2),theme:'day',sort_hotkeys:true},trims:{'Boing':[0.1,0.7]},hotkeys:{'goto:':'F1','goto:Memes':'F2','play:Memes/Grillos':'Numpad1','play:Ding':'ctrl+alt+Digit1','play:Bocina':'Numpad1','play:Airhorn':'Numpad1','stop':'ctrl+alt+Digit0'},
     sounds:((navigator.language||'es').startsWith('es')?['Bocina','Ding','Boing','Risas enlatadas','Redoble de tambor','Bruh','Aplausos','Grillos','Trombón triste','Wow']:['Airhorn','Ding','Boing','Laugh track','Drumroll','Bruh','Applause','Crickets','Sad trombone','Wow']).map((n,i)=>({id:i>6?'Memes/'+n:n,name:n,page:i>6?'Memes':''})),pages:['Memes','LoL']};
   const pl=new Set(['Ding']);
   const b={setDevice:(k,v)=>{st[k]=v;render(st)},setDenoise:v=>{st.denoise=v;render(st)},setVolume:(k,v)=>{st[k]=v},toggleMute:()=>{st.mic_muted=!st.mic_muted;render(st)},
     play:id=>{pl.add(id);setTimeout(()=>pl.delete(id),2500)},stop:id=>{id?pl.delete(id):pl.clear()},
-    setHotkey:(a,c)=>{for(const[k,v]of Object.entries(st.hotkeys))if(v===c)delete st.hotkeys[k];c?st.hotkeys[a]=c:delete st.hotkeys[a];render(st)},
+    setHotkey:(a,c)=>{for(const[k,v]of Object.entries(st.hotkeys))if(v===c&&hkClash(k,a))delete st.hotkeys[k];c?st.hotkeys[a]=c:delete st.hotkeys[a];render(st)},
     capturing:()=>{},addSounds:()=>toast('(vista previa)'),
     newPage:n=>{ if(!st.pages.includes(n)) st.pages.push(n); st.ui.page=n; render(st); },
     deletePage:p=>{ if(st.sounds.some(s=>s.page===p)){ toast('La página tiene sonidos'); return; } st.pages=st.pages.filter(x=>x!==p); if(st.ui.page===p) st.ui.page=''; PAGE=st.ui.page||''; render(st); },

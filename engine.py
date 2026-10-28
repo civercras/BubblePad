@@ -466,12 +466,28 @@ class Engine:
         if sid in self._paths and self.monitor.stream is not None:
             self.monitor.add(self._trimmed(sid, self.monitor, start, end), "__preview__")
 
+    def cue(self, n):
+        """n pitidos cortos solo en tus cascos (Discord no los oye): avisa del cambio de página."""
+        m = self.monitor
+        if m.stream is None:
+            return
+        rate = m.rate
+        t_on = np.arange(int(rate * 0.06)) / rate
+        env = np.minimum(1.0, np.minimum(t_on, t_on[::-1]) / 0.008)          # sin chasquidos
+        beep = np.sin(2 * np.pi * 1320 * t_on) * env
+        gap = np.zeros(int(rate * 0.07))
+        mono = np.concatenate([np.concatenate([beep, gap]) for _ in range(max(1, min(n, 6)))])
+        mono *= min(1.0, 0.22 / max(self.vol_me, 0.05))                       # que se oiga aunque "para mí" esté bajo
+        data = np.repeat(mono[:, None], m.ch, axis=1).astype(np.float32)
+        m.stop("__cue__")
+        m.add(data, "__cue__")
+
     def stop(self, sid=None):
         self.cable.stop(sid)
         self.monitor.stop(sid)
 
     def playing(self):
-        return self.cable.playing() | self.monitor.playing()
+        return (self.cable.playing() | self.monitor.playing()) - {"__cue__"}
 
     def positions(self):
         """Avance (0..1) de cada sonido que suena, para la barra de progreso de la lista."""
@@ -479,7 +495,7 @@ class Engine:
         for sink in (self.monitor, self.cable):
             with sink.lock:
                 for v in sink.voices:
-                    if v.sid != "__preview__" and len(v.data):
+                    if not v.sid.startswith("__") and len(v.data):
                         out[v.sid] = max(out.get(v.sid, 0.0), min(1.0, v.pos / len(v.data)))
         return out
 
