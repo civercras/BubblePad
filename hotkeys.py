@@ -1,18 +1,31 @@
 """Atajos de teclado globales (funcionan con la ventana minimizada o escondida).
 
-Dos vías a la vez, para que funcionen también dentro de juegos:
+Tres vías a la vez, para que funcionen también dentro de juegos:
   1. RegisterHotKey: Windows avisa cuando se pulsa una combinación concreta.
   2. Raw Input (RIDEV_INPUTSINK): Bubblepad lee las teclas aunque no tenga el foco.
      Algunos juegos (p. ej. League of Legends) le piden a Windows que no entregue
      los atajos de RegisterHotKey mientras están delante; esta vía no depende de eso.
      Solo mira las teclas; no las bloquea ni las guarda.
+  3. Sondeo: cada 15 ms mira si las teclas de los atajos están pulsadas.
 Si las dos detectan la misma pulsación, solo cuenta una vez.
 """
 import sys
 import threading
+import os
 import time
 
 from PySide6.QtCore import QObject, Signal
+
+import config
+
+
+def diag(text):
+    """Registro de diagnóstico de atajos (bubblepad.log). Nunca apunta qué teclas se pulsan."""
+    try:
+        with open(os.path.join(config.BASE, "bubblepad.log"), "a", encoding="utf-8") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S") + "  [atajos] " + text + "\n")
+    except Exception:
+        pass
 
 IS_WIN = sys.platform == "win32"
 if IS_WIN:
@@ -20,6 +33,7 @@ if IS_WIN:
     from ctypes import wintypes
     user32 = ctypes.windll.user32
     kernel32 = ctypes.windll.kernel32
+    advapi32 = ctypes.windll.advapi32
 
 MOD = {"alt": 0x1, "ctrl": 0x2, "shift": 0x4, "win": 0x8}
 MOD_NOREPEAT = 0x4000
@@ -27,6 +41,7 @@ WM_HOTKEY = 0x0312
 WM_APP_RELOAD = 0x8001
 WM_APP_QUIT = 0x8002
 WM_INPUT = 0x00FF
+WM_TIMER = 0x0113
 RID_INPUT = 0x10000003
 RIM_TYPEKEYBOARD = 1
 RIDEV_INPUTSINK = 0x00000100
@@ -37,6 +52,7 @@ MOD_VKS = {0x10, 0x11, 0x12, 0x5B, 0x5C, 0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5}
 # Con Bloq Num apagado el teclado numérico manda flechas/Inicio/Fin... (sin la marca E0)
 NAV_TO_NUMPAD = {0x2D: 0x60, 0x23: 0x61, 0x28: 0x62, 0x22: 0x63, 0x25: 0x64, 0x0C: 0x65,
                  0x27: 0x66, 0x24: 0x67, 0x26: 0x68, 0x21: 0x69, 0x2E: 0x6E}
+NUMPAD_TO_NAV = {v: k for k, v in NAV_TO_NUMPAD.items()}
 
 if IS_WIN:
     class RAWINPUTDEVICE(ctypes.Structure):
@@ -60,6 +76,19 @@ if IS_WIN:
     user32.DefWindowProcW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
     user32.DefWindowProcW.restype = wintypes.LPARAM
     user32.DestroyWindow.argtypes = [wintypes.HWND]
+    user32.GetForegroundWindow.restype = wintypes.HWND
+    user32.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
+    user32.GetAsyncKeyState.restype = ctypes.c_short
+    user32.SetTimer.argtypes = [wintypes.HWND, ctypes.c_size_t, wintypes.UINT, ctypes.c_void_p]
+    user32.SetTimer.restype = ctypes.c_size_t
+    kernel32.OpenProcess.restype = wintypes.HANDLE
+    kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel32.QueryFullProcessImageNameW.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.LPWSTR,
+                                                    ctypes.POINTER(wintypes.DWORD)]
+    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+    advapi32.OpenProcessToken.argtypes = [wintypes.HANDLE, wintypes.DWORD, ctypes.POINTER(wintypes.HANDLE)]
+    advapi32.GetTokenInformation.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD,
+                                             ctypes.POINTER(wintypes.DWORD)]
 
 
 # KeyboardEvent.code (de la interfaz) -> tecla virtual de Windows
@@ -106,6 +135,10 @@ class HotkeyManager(QObject):
         self._active = {}          # (mods, vk) -> acción, lo que está en vigor ahora
         self._last = {}            # acción -> momento del último disparo (para no repetir)
         self._down = set()         # teclas pulsadas según Raw Input
+        self._poll_down = set()    # combinaciones pulsadas según el sondeo
+        self._fg_hwnd = None
+        self._fg_name = "?"
+        self._tick = 0
         if IS_WIN:
             threading.Thread(target=self._loop, daemon=True).start()
             self._ready.wait(2)
@@ -121,12 +154,64 @@ class HotkeyManager(QObject):
         if IS_WIN and self._tid:
             user32.PostThreadMessageW(self._tid, WM_APP_QUIT, 0, 0)
 
-    def _fire(self, act):
+    def _fire(self, act, via=""):
         now = time.monotonic()
-        if now - self._last.get(act, 0) < 0.25:      # la otra vía ya la disparó
+        if now - self._last.get(act, 0) < 0.25:      # otra vía ya la disparó
             return
         self._last[act] = now
+        diag(f"disparado por {via} con delante: {self._fg_name}")
         self.pressed.emit(act)
+
+    # ── Tercera vía: mirar cada 15 ms si las teclas de los atajos están pulsadas ──
+    def _poll(self):
+        if not self._active:
+            return
+        ks = user32.GetAsyncKeyState
+        def down(vk):
+            return bool(ks(vk) & 0x8000)
+        mods = 0
+        if down(0x11): mods |= MOD["ctrl"]
+        if down(0x12): mods |= MOD["alt"]
+        if down(0x10): mods |= MOD["shift"]
+        if down(0x5B) or down(0x5C): mods |= MOD["win"]
+        now_down = set()
+        for (m, vk), act in self._active.items():
+            alt = NUMPAD_TO_NAV.get(vk)
+            if m == mods and (down(vk) or (alt and down(alt))):
+                now_down.add((m, vk))
+                if (m, vk) not in self._poll_down:
+                    self._fire(act, "sondeo")
+        self._poll_down = now_down
+
+    def _watch_foreground(self):
+        """Apunta qué programa está delante cuando cambia (para saber si Windows nos bloquea)."""
+        hwnd = user32.GetForegroundWindow()
+        if hwnd == self._fg_hwnd:
+            return
+        self._fg_hwnd = hwnd
+        pid = wintypes.DWORD()
+        user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+        name, elev = "?", "?"
+        h = kernel32.OpenProcess(0x1000, False, pid.value)          # PROCESS_QUERY_LIMITED_INFORMATION
+        if h:
+            buf = ctypes.create_unicode_buffer(520)
+            n = wintypes.DWORD(520)
+            if kernel32.QueryFullProcessImageNameW(h, 0, buf, ctypes.byref(n)):
+                name = os.path.basename(buf.value)
+            tok = wintypes.HANDLE()
+            if advapi32.OpenProcessToken(h, 0x0008, ctypes.byref(tok)):  # TOKEN_QUERY
+                e = wintypes.DWORD()
+                ln = wintypes.DWORD()
+                if advapi32.GetTokenInformation(tok, 20, ctypes.byref(e), 4, ctypes.byref(ln)):  # TokenElevation
+                    elev = "sí" if e.value else "no"
+                kernel32.CloseHandle(tok)
+            kernel32.CloseHandle(h)
+        else:
+            name = f"(pid {pid.value}, acceso denegado: error {kernel32.GetLastError()})"
+        if name == self._fg_name:
+            return
+        self._fg_name = name
+        diag(f"delante: {name} · administrador: {elev}")
 
     # ── Raw Input ──
     def _raw_key(self, vk, flags):
@@ -156,7 +241,7 @@ class HotkeyManager(QObject):
             mods |= MOD["win"]
         act = self._active.get((mods, vk))
         if act:
-            self._fire(act)
+            self._fire(act, "raw input")
 
     def _setup_raw(self):
         """Ventana invisible que recibe las teclas aunque Bubblepad no tenga el foco."""
@@ -196,12 +281,27 @@ class HotkeyManager(QObject):
         except Exception:
             raw_hwnd = None
         self._ready.set()
+        try:
+            admin = bool(ctypes.windll.shell32.IsUserAnAdmin())
+        except Exception:
+            admin = False
+        diag(f"inicio · Bubblepad administrador: {'sí' if admin else 'no'} · raw input: {'sí' if raw_hwnd else 'no'}")
+        user32.SetTimer(None, 0, 15, None)                       # para el sondeo
         ids = {}                                                 # id -> acción (RegisterHotKey)
         while user32.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
             if msg.message == WM_HOTKEY:
                 act = ids.get(msg.wParam)
                 if act:
-                    self._fire(act)
+                    self._fire(act, "RegisterHotKey")
+            elif msg.message == WM_TIMER:
+                try:
+                    self._poll()
+                    self._tick += 1
+                    if self._tick % 30 == 0:                     # ~cada medio segundo
+                        self._watch_foreground()
+                except Exception as e:
+                    if self._tick % 2000 == 1:
+                        diag(f"error en sondeo: {e!r}")
             elif msg.message == WM_INPUT:
                 try:
                     self._read_raw(msg.lParam)
@@ -226,6 +326,7 @@ class HotkeyManager(QObject):
                     elif not raw_hwnd:                           # sin Raw Input, de verdad no funcionará
                         bad.append(combo)
                 self._active = active
+                diag(f"{len(active)} atajos activos · {len(ids)} aceptados por RegisterHotKey")
                 if bad:
                     self.failed.emit(",".join(bad))
             elif msg.message == WM_APP_QUIT:
