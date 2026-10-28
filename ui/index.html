@@ -812,7 +812,19 @@ html.skin-chrome.night .ptab .pk{background:rgba(40,20,0,.45);box-shadow:inset 0
 .ptab.drop{background:rgba(120,230,140,.45);color:#fff;box-shadow:0 0 0 2px rgba(150,255,170,.8)}
 .ptab.ask{background:rgba(255,90,80,.55);color:#fff}
 .ptab input{width:110px;height:22px;border:none;outline:none;border-radius:11px;padding:0 8px;font:12px "Segoe UI";background:var(--field);color:var(--field-ink)}
-.row[draggable=true],.snd[draggable=true]{-webkit-user-drag:element}
+.ghost{position:fixed !important;z-index:9999;pointer-events:none;margin:0 !important;will-change:transform;
+  filter:drop-shadow(0 10px 14px rgba(0,20,60,.35));animation:none !important}
+.gchip{display:flex;align-items:center;gap:8px;height:34px;padding:0 16px 0 8px;border-radius:17px;white-space:nowrap;
+  font:400 18px "VT";color:#e6f4ff;background:linear-gradient(180deg,rgba(150,205,255,.55),rgba(60,130,230,.55));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 0 0 1px rgba(190,225,255,.7),0 0 14px rgba(110,180,255,.45);backdrop-filter:blur(4px)}
+.gchip svg{width:20px;height:20px;padding:5px;border-radius:50%;fill:#25324a;background:radial-gradient(circle at 50% 25%,#fff,#cfd6de 60%,#9aa3ae)}
+html.night .gchip,html.skin-chrome.night .gchip{color:#ffe4bf;background:linear-gradient(180deg,rgba(255,190,110,.4),rgba(190,110,30,.45));
+  box-shadow:inset 0 1px 0 rgba(255,230,190,.5),inset 0 0 0 1px rgba(255,200,130,.6),0 0 14px rgba(255,150,40,.4)}
+.dragsrc{opacity:.3;transition:opacity .2s}
+body.dragging,body.dragging *{cursor:grabbing !important;user-select:none}
+.ptab.drop{transform:scale(1.08);transition:transform .15s,background .15s}
+.ptab.gulp{animation:gulp .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes gulp{0%{transform:scale(1.08)}40%{transform:scale(1.22)}100%{transform:scale(1)}}
 html.skin-chrome .ptab{font:400 11px "Pix";letter-spacing:1px;text-transform:uppercase;color:#7fa6d9;text-shadow:none;border-radius:12px;height:26px}
 html.skin-chrome .ptab:hover{background:rgba(130,195,255,.14);color:#cfe6ff}
 html.skin-chrome .ptab.on{color:#e6f4ff;background:rgba(130,195,255,.22);box-shadow:inset 0 0 0 1px rgba(170,215,255,.55),0 0 10px rgba(110,180,255,.35);text-shadow:0 0 6px rgba(120,190,255,.8)}
@@ -1316,11 +1328,75 @@ function emptyMsg(){
   return T('page_empty');
 }
 function setPage(p){ PAGE=lastUiPage=p; bridge.setUi('page',p); $('search').value=''; renderGrid(); }
+// Arrastrar un sonido a una pestaña: la copia sigue al ratón con un poco de muelle (inercia)
+// y se inclina según la velocidad. Al soltar sobre una pestaña se mete en ella; si no, vuelve.
+let DRAG=null;
 function dragSound(el,s){
-  el.draggable=true;
-  el.ondragstart=e=>{ e.dataTransfer.setData('text/x-sound',s.id); e.dataTransfer.effectAllowed='move'; document.body.classList.add('dragging'); };
-  el.ondragend=()=>document.body.classList.remove('dragging');
+  el.addEventListener('pointerdown',e=>{
+    if(e.button!==0 || e.target.closest('.key,.x,.del,.rplay,input')) return;
+    const r=el.getBoundingClientRect();
+    DRAG={el,s,sx:e.clientX,sy:e.clientY,ox:e.clientX-r.left,oy:e.clientY-r.top,r,on:false,pid:e.pointerId};
+  });
 }
+function dragStart(){
+  const d=DRAG; let g;
+  if(d.el.classList.contains('row')){
+    // en la lista, una fila entera taparía las pestañas: arrastramos una pastilla con el nombre
+    g=document.createElement('div'); g.className='ghost gchip';
+    g.innerHTML=LICO.play+'<span></span>'; g.querySelector('span').textContent=d.s.name;
+    document.body.appendChild(g);
+    const w=g.offsetWidth, h=g.offsetHeight;
+    d.ox=18; d.oy=h/2; d.r={left:d.sx-d.ox,top:d.sy-d.oy,width:w,height:h};
+  } else {
+    g=d.el.cloneNode(true); g.classList.add('ghost'); g.classList.remove('pop','playing');
+    Object.assign(g.style,{width:d.r.width+'px',height:d.r.height+'px'});
+    document.body.appendChild(g);
+  }
+  g.style.left='0px'; g.style.top='0px';
+  d.g=g; d.on=true; d.x=d.r.left; d.y=d.r.top; d.vx=0; d.vy=0; d.tx=d.x; d.ty=d.y; d.tab=null;
+  d.el.classList.add('dragsrc'); document.body.classList.add('dragging');
+  const step=()=>{
+    if(!d.g) return;
+    // muelle con amortiguación: se queda un poco atrás y se pasa un pelín al frenar
+    d.vx=(d.vx+(d.tx-d.x)*0.2)*0.72; d.vy=(d.vy+(d.ty-d.y)*0.2)*0.72;
+    d.x+=d.vx; d.y+=d.vy;
+    const tilt=Math.max(-10,Math.min(10,d.vx*0.55));
+    d.g.style.transform=`translate(${d.x}px,${d.y}px) rotate(${tilt}deg) scale(${d.scale||1.04})`;
+    if(d.fade!=null) d.g.style.opacity=d.fade;
+    d.raf=requestAnimationFrame(step);
+  };
+  step();
+}
+function dragTabAt(x,y){
+  const t=document.elementFromPoint(x,y)?.closest('.ptab');
+  return t && t.dataset.page!==undefined && t.dataset.page!==PAGE ? t : null;
+}
+addEventListener('pointermove',e=>{
+  const d=DRAG; if(!d) return;
+  if(!d.on){ if(Math.hypot(e.clientX-d.sx,e.clientY-d.sy)<6) return; dragStart(); }
+  d.tx=e.clientX-d.ox; d.ty=e.clientY-d.oy;
+  const t=dragTabAt(e.clientX,e.clientY);
+  if(t!==d.tab){ d.tab?.classList.remove('drop'); d.tab=t; t?.classList.add('drop'); }
+});
+function dragEnd(e,cancel){
+  const d=DRAG; DRAG=null; if(!d||!d.on) return;
+  // que soltar no cuente como clic (reproduciría el sonido)
+  const eat=ev=>{ ev.stopPropagation(); ev.preventDefault(); };
+  addEventListener('click',eat,{capture:true,once:true}); setTimeout(()=>removeEventListener('click',eat,{capture:true}),60);
+  setTimeout(()=>d.el.classList.remove('dragsrc'),cancel||!d.tab?380:0);
+  document.body.classList.remove('dragging');
+  const t=cancel?null:d.tab; d.tab?.classList.remove('drop');
+  if(t){
+    const r=t.getBoundingClientRect();
+    d.tx=r.left+r.width/2-d.r.width*0.15; d.ty=r.top+r.height/2-d.r.height*0.15; d.scale=0.3; d.fade=0;
+    d.g.style.transition='opacity .28s'; t.classList.add('gulp'); setTimeout(()=>t.classList.remove('gulp'),450);
+    bridge.moveSound(d.s.id,t.dataset.page);
+  } else { d.tx=d.r.left; d.ty=d.r.top; d.scale=1; }
+  setTimeout(()=>{ cancelAnimationFrame(d.raf); d.g.remove(); d.g=null; },t?300:420);
+}
+addEventListener('pointerup',e=>dragEnd(e,false));
+addEventListener('pointercancel',e=>dragEnd(e,true));
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&DRAG) dragEnd(e,true); },true);
 function renderPages(){
   const box=$('pages'); if(!box || box.querySelector('input')) return;
   box.innerHTML='';
@@ -1332,9 +1408,7 @@ function renderPages(){
     const hk=S.hotkeys['goto:'+p]; if(hk){ const k=document.createElement('span'); k.className='pk'; k.textContent=label(hk); b.appendChild(k); }
     b.onclick=()=>setPage(p);
     b.oncontextmenu=e=>{ e.preventDefault(); openPageMenu(e.clientX,e.clientY,p); };
-    b.ondragover=e=>{ if([...e.dataTransfer.types].includes('text/x-sound')){ e.preventDefault(); b.classList.add('drop'); } };
-    b.ondragleave=()=>b.classList.remove('drop');
-    b.ondrop=e=>{ e.preventDefault(); b.classList.remove('drop'); const id=e.dataTransfer.getData('text/x-sound'); if(id) bridge.moveSound(id,p); };
+    b.dataset.page=p;
     box.appendChild(b);
   }
   const add=document.createElement('button'); add.className='ptab add'; add.textContent='+'; add.title=T('page_new');

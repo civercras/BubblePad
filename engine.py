@@ -466,18 +466,30 @@ class Engine:
         if sid in self._paths and self.monitor.stream is not None:
             self.monitor.add(self._trimmed(sid, self.monitor, start, end), "__preview__")
 
+    @staticmethod
+    def bubble_pops(n, rate):
+        """n «plops» de burbuja: un tono que sube de golpe y se apaga enseguida, cada uno un poco más agudo."""
+        out = []
+        for i in range(max(1, min(n, 6))):
+            dur = 0.075
+            t = np.arange(int(rate * dur)) / rate
+            f0, f1 = 340 * 1.12 ** i, 1150 * 1.12 ** i
+            freq = f1 - (f1 - f0) * np.exp(-t / 0.012)              # sube rápido y se estabiliza
+            phase = 2 * np.pi * np.cumsum(freq) / rate
+            env = np.minimum(1.0, t / 0.002) * np.exp(-t / 0.018) * np.minimum(1.0, (dur - t) / 0.006)  # ataque 2 ms, cola corta
+            body = np.sin(phase) * env
+            body += 0.25 * np.sin(phase * 2.01) * env * np.exp(-t / 0.008)   # un brillo de agua al principio
+            out.append(body)
+            out.append(np.zeros(int(rate * 0.06)))
+        return np.concatenate(out) / 1.25
+
     def cue(self, n):
-        """n pitidos cortos solo en tus cascos (Discord no los oye): avisa del cambio de página."""
+        """Plops de burbuja solo en tus cascos (Discord no los oye): avisan del cambio de página."""
         m = self.monitor
         if m.stream is None:
             return
-        rate = m.rate
-        t_on = np.arange(int(rate * 0.06)) / rate
-        env = np.minimum(1.0, np.minimum(t_on, t_on[::-1]) / 0.008)          # sin chasquidos
-        beep = np.sin(2 * np.pi * 1320 * t_on) * env
-        gap = np.zeros(int(rate * 0.07))
-        mono = np.concatenate([np.concatenate([beep, gap]) for _ in range(max(1, min(n, 6)))])
-        mono *= min(1.0, 0.22 / max(self.vol_me, 0.05))                       # que se oiga aunque "para mí" esté bajo
+        mono = self.bubble_pops(n, m.rate)
+        mono *= min(1.0, 0.18 / max(self.vol_me, 0.05))                       # que se oiga aunque "para mí" esté bajo
         data = np.repeat(mono[:, None], m.ch, axis=1).astype(np.float32)
         m.stop("__cue__")
         m.add(data, "__cue__")
