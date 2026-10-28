@@ -59,16 +59,65 @@ def launch_elevated():
     if sys.platform != "win32":
         return False
     import ctypes
+    hidden = " --hidden" if ("--hidden" in sys.argv or "--oculto" in sys.argv) else ""
     if config.FROZEN:
-        exe, args = sys.executable, "--relaunch"
+        exe, args = sys.executable, "--relaunch" + hidden
     else:
         exe = sys.executable
         pyw = os.path.join(os.path.dirname(exe), "pythonw.exe")
         if os.path.exists(pyw):
             exe = pyw
-        args = f'"{os.path.abspath(__file__)}" --relaunch'
+        args = f'"{os.path.abspath(__file__)}" --relaunch' + hidden
     r = ctypes.windll.shell32.ShellExecuteW(None, "runas", exe, args, config.BASE, 1)
     return r > 32
+
+
+# ── arrancar con Windows ──
+# Una entrada en HKCU\...\Run (solo para este usuario, sin permisos de administrador).
+# Arranca escondido en la bandeja, para que el micro virtual esté listo antes de abrir Discord.
+RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
+RUN_NAME = "Bubblepad"
+
+
+def autostart_cmd():
+    if config.FROZEN:
+        return f'"{sys.executable}" --hidden'
+    exe = sys.executable
+    pyw = os.path.join(os.path.dirname(exe), "pythonw.exe")
+    if os.path.exists(pyw):
+        exe = pyw
+    return f'"{exe}" "{os.path.abspath(__file__)}" --hidden'
+
+
+def autostart_enabled():
+    if sys.platform != "win32":
+        return False
+    import winreg
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, RUN_KEY) as k:
+            winreg.QueryValueEx(k, RUN_NAME)
+        return True
+    except OSError:
+        return False
+
+
+def set_autostart(on):
+    if sys.platform != "win32":
+        return False
+    import winreg
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, RUN_KEY, 0, winreg.KEY_SET_VALUE) as k:
+            if on:
+                winreg.SetValueEx(k, RUN_NAME, 0, winreg.REG_SZ, autostart_cmd())
+            else:
+                try:
+                    winreg.DeleteValue(k, RUN_NAME)
+                except FileNotFoundError:
+                    pass
+        return True
+    except OSError as e:
+        log_error(f"Arranque con Windows: {e}")
+        return False
 
 
 def bubble_icon(muted=False):
@@ -165,6 +214,10 @@ class Bridge(QObject):
             ui["skin"] = "aqua" if value == "aqua" else "chrome"
         elif key == "admin_on_start":
             ui["admin_on_start"] = value == "1"
+        elif key == "autostart":
+            set_autostart(value == "1")
+            self.app.push_state()
+            return
         elif key == "lang":
             ui["lang"] = value if value in ("es", "en") else "en"
             self.app.set_lang(ui["lang"])
@@ -521,6 +574,7 @@ class BubblepadApp:
             "trims": self.cfg["trims"],
             "ui": self.cfg["ui"],
             "admin": is_admin(),
+            "autostart": autostart_enabled(),
             "cable_missing": not any("CABLE INPUT" in o.upper() for o in self.outputs),
         }
 
@@ -703,6 +757,10 @@ def main():
         if c:
             c.readyRead.connect(app.show_window)
     server.newConnection.connect(on_conn)
+
+    # Si está activado el arranque con Windows, actualizamos la ruta (por si la carpeta se ha movido)
+    if autostart_enabled():
+        set_autostart(True)
 
     if "--oculto" not in sys.argv and "--hidden" not in sys.argv:
         app.show_window()
