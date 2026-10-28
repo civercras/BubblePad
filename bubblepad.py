@@ -59,7 +59,7 @@ def launch_elevated():
     if sys.platform != "win32":
         return False
     import ctypes
-    hidden = " --hidden" if ("--hidden" in sys.argv or "--oculto" in sys.argv) else ""
+    hidden = (" --hidden" if ("--hidden" in sys.argv or "--oculto" in sys.argv) else "") + (" --debug" if "--debug" in sys.argv else "")
     if config.FROZEN:
         exe, args = sys.executable, "--relaunch" + hidden
     else:

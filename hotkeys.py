@@ -19,8 +19,14 @@ from PySide6.QtCore import QObject, Signal
 import config
 
 
+DEBUG = "--debug" in sys.argv     # "Bubblepad (debug).bat": registra por qué vía llega cada atajo
+
+
 def diag(text):
-    """Registro de diagnóstico de atajos (bubblepad.log). Nunca apunta qué teclas se pulsan."""
+    """Registro de diagnóstico de atajos (bubblepad.log), solo en modo depuración.
+    Nunca apunta qué teclas se pulsan."""
+    if not DEBUG:
+        return
     try:
         with open(os.path.join(config.BASE, "bubblepad.log"), "a", encoding="utf-8") as f:
             f.write(time.strftime("%Y-%m-%d %H:%M:%S") + "  [atajos] " + text + "\n")
@@ -297,7 +303,7 @@ class HotkeyManager(QObject):
                 try:
                     self._poll()
                     self._tick += 1
-                    if self._tick % 30 == 0:                     # ~cada medio segundo
+                    if DEBUG and self._tick % 30 == 0:           # ~cada medio segundo
                         self._watch_foreground()
                 except Exception as e:
                     if self._tick % 2000 == 1:
