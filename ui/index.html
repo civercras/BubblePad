@@ -1659,7 +1659,8 @@ function wire(){
   $('addBtn').onclick=()=>bridge.addSounds();
   $('folderBtn').onclick=()=>bridge.openFolder();
   $('refreshBtn').onclick=()=>{bridge.refresh();toast(T('refreshed'));};
-  $('settingsBtn').onclick=()=>openDrawer(!$('drawer').classList.contains('open'));
+  // con las conexiones abiertas, ⚙ las cierra y deja ver los ajustes
+  $('settingsBtn').onclick=()=>{ if($('patch').classList.contains('open')){ openPatch(false); openDrawer(true); return; } openDrawer(!$('drawer').classList.contains('open')); };
   window.addEventListener('wheel',e=>{ if(e.ctrlKey){ e.preventDefault(); bridge.zoomStep(e.deltaY<0?1:-1); } },{passive:false});
   document.addEventListener('keydown',e=>{ if(e.ctrlKey&&['+','-','0','=','Add','Subtract'].includes(e.key)){ e.preventDefault();
     e.key==='0'?bridge.resetScale():bridge.zoomStep(e.key==='-'||e.key==='Subtract'?-1:1); } });
@@ -1912,8 +1913,9 @@ function wireKnobs(){
 function vuHW(id,v){ const el=$(id); if(!el) return; if(!el.children.length) el.innerHTML='<i></i>'.repeat(16);
   const n=Math.round(Math.sqrt(Math.min(1,v))*16); [...el.children].forEach((c,i)=>c.className=i<n?('on'+(i>=14?' r':i>=11?' y':'')):''); }
 function buildPatch(){
-  if(SKIN==='chrome'){ buildPatchHW(); return; }
+  // los iconos se rellenan siempre: también los usa el resumen de conexiones de los ajustes
   document.querySelectorAll('[data-ico]').forEach(el=>el.innerHTML=ICO[el.dataset.ico]);
+  if(SKIN==='chrome'){ buildPatchHW(); return; }
   const svg=$('wires'); let h=`<defs><radialGradient id="plugG" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#b9c4cf"/><stop offset="1" stop-color="#6b7886"/></radialGradient></defs>`;
   for(const [k,w] of Object.entries(WIRES)){
     const m=w.d.match(/-?\d+(\.\d+)?/g).map(Number), a=[m[0],m[1]], b=[m[m.length-2],m[m.length-1]];
@@ -1946,7 +1948,8 @@ function wireLevels(lv,nowPlaying){
   set('w_mic',S&&S.mic_muted?0:lv.mic); set('w_snd',nowPlaying?.9:0); set('w_call',lv.call); set('w_me',lv.me);
   if(SKIN==='chrome'&&$('patch').classList.contains('open')){ vuHW('padVuV',S&&S.mic_muted?0:lv.mic); vuHW('padVuS',lv.me); }
 }
-function openPatch(on){ $('patch').classList.toggle('open',on); if(on){ openDrawer(false); renderPatch(); } else closePicker(); }
+// los ajustes se quedan abiertos debajo: al cerrar las conexiones vuelves a ellos
+function openPatch(on){ $('patch').classList.toggle('open',on); if(on){ renderPatch(); } else closePicker(); }
 function closePicker(){ $('picker').classList.remove('show'); }
 function openPicker(kind,btn){
   const pk=$('picker'), list=kind==='mic'?(S.inputs||[]):(S.outputs||[]);
