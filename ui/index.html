@@ -834,6 +834,118 @@ html.skin-chrome.night .ptab{color:#b3804a}
 html.skin-chrome.night .ptab:hover{background:rgba(255,170,70,.12);color:#ffd9a8}
 html.skin-chrome.night .ptab.on{color:#ffe4bf;background:rgba(255,170,70,.18);box-shadow:inset 0 0 0 1px rgba(255,190,110,.5),0 0 10px rgba(255,150,40,.3);text-shadow:0 0 6px rgba(255,150,40,.7)}
 html.skin-chrome.night .ptab input{background:rgba(40,20,0,.55);color:#ffd9a8;box-shadow:inset 0 0 0 1px rgba(255,190,110,.5)}
+
+/* ══ Conexiones en Chrome: placas de hardware sobre chapa perforada ══ */
+html.skin-chrome .patch{background:radial-gradient(circle at 50% 50%,rgba(0,0,0,.55) 0 2.2px,transparent 2.6px) 0 0/14px 14px,
+  radial-gradient(120% 90% at 50% 0%,#3b4250,#20242b 70%) !important;box-shadow:0 12px 34px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.08) !important;backdrop-filter:none}
+html.skin-chrome .patch::before{background:radial-gradient(70% 50% at 50% 45%,rgba(90,150,255,.10),transparent 70%) !important}
+html.skin-chrome .patch-head h3{color:#c9d2de !important;font:400 12px "Pix" !important;letter-spacing:3px !important;text-shadow:none !important}
+html.skin-chrome .pn-snd{display:none !important}
+html.skin-chrome .pn{display:block;margin:0;gap:0;text-align:left;border-radius:10px;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,0) 0 2px,rgba(255,255,255,.18) 2px 3px,rgba(0,0,0,.025) 3px 5px),
+    linear-gradient(180deg,#f3f5f7 0%,#dde1e6 48%,#c6ccd3 100%);color:#2a3340;
+  box-shadow:0 0 0 1px #3a4049,0 3px 0 1px #2c3138,0 8px 14px rgba(0,0,0,.45),inset 0 1px 0 #fff,inset 0 -2px 3px rgba(0,0,0,.12)}
+html.skin-chrome .pn > *{position:absolute}
+html.skin-chrome .pn-mic{left:16px !important;top:154px !important;width:176px;height:212px}
+html.skin-chrome .pn-pad{left:208px !important;top:134px !important;width:170px;height:236px}
+html.skin-chrome .pn-call{left:400px !important;top:102px !important;width:170px;height:196px}
+html.skin-chrome .pn-me{left:400px !important;top:314px !important;width:170px;height:156px}
+html.skin-chrome .pn-ico{display:none}
+html.skin-chrome .pn-t{left:16px;top:14px;margin:0;padding:3px 9px 2px;font:400 10px/1.2 "Pix" !important;letter-spacing:1px;color:#2b2a26 !important;white-space:nowrap;text-transform:uppercase;
+  background:linear-gradient(180deg,#f7f0d6,#ece2bf);transform:rotate(-1.2deg);box-shadow:0 1px 2px rgba(0,0,0,.3);
+  clip-path:polygon(0 4%,3% 0,97% 3%,100% 0,99% 100%,96% 96%,4% 100%,1% 96%)}
+html.skin-chrome .pn-call .pn-t{transform:rotate(1deg)}
+html.skin-chrome .pn-s{display:none}
+html.skin-chrome .pn-dev{left:14px;right:14px;top:44px;width:auto;height:30px;border:none !important;border-radius:6px;padding:0 9px;
+  font:400 17px/1 "VT" !important;color:#d6ecff !important;text-shadow:0 0 6px rgba(120,190,255,.7);overflow:hidden;
+  background:linear-gradient(180deg,#123a8a 0%,#0b2766 60%,#0a2158 100%) !important;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.5),0 1px 0 rgba(255,255,255,.75) !important}
+html.skin-chrome .pn-dev::after{content:"";position:absolute;inset:0;background:linear-gradient(165deg,rgba(255,255,255,.16) 0 38%,transparent 38%);pointer-events:none}
+html.skin-chrome .pn-dev i{color:#9cc4f0 !important;font-size:11px}
+html.skin-chrome .pn-dev:hover{box-shadow:inset 0 2px 5px rgba(0,0,0,.6),inset 0 0 0 1px rgba(120,190,255,.6),0 0 10px rgba(110,180,255,.35) !important}
+html.skin-chrome .pn-dev.empty span{color:#ff9a8e}
+/* ruedas de volumen: el deslizador sigue ahí (oculto) y la rueda lo mueve */
+html.skin-chrome .pn-vol{width:70px;height:62px;display:block;font:400 8px "Pix" !important;letter-spacing:1px;color:#2a3340 !important}
+html.skin-chrome .pn-vol input{position:absolute;opacity:0;pointer-events:none;width:1px}
+html.skin-chrome .pn-vol > span{position:absolute;left:0;right:0;top:56px;text-align:center;text-transform:uppercase}
+html.skin-chrome .pn-vol b{position:absolute;left:0;right:0;top:-12px;text-align:center;font:400 13px "VT";color:#5b636d;opacity:0;transition:opacity .2s}
+html.skin-chrome .pn-vol:hover b,html.skin-chrome .pn-vol.turning b{opacity:1}
+html.skin-chrome .pn-mic .pn-vol{left:17px;top:84px}
+html.skin-chrome .pn-call .pn-vol,html.skin-chrome .pn-me .pn-vol{left:75px;top:84px}
+html.skin-chrome .pn-me .pn-vol{top:78px}
+.hwk{position:absolute;left:15px;top:14px;width:40px;height:40px;border-radius:50%;cursor:ns-resize;touch-action:none;
+  background:radial-gradient(circle at 50% 30%,#5d6672 0%,#2e343c 55%,#1a1e23 100%);
+  box-shadow:0 0 0 2px #c9ced5,0 0 0 3px #59606a,0 4px 6px rgba(0,0,0,.45),inset 0 1px 1px rgba(255,255,255,.35)}
+.hwk::before{content:"";position:absolute;left:-11px;top:-11px;width:62px;height:62px;border-radius:50%;pointer-events:none;
+  background:repeating-conic-gradient(from -135deg,#4b535d 0 1.5deg,transparent 1.5deg 27deg);
+  -webkit-mask:radial-gradient(circle,transparent 25px,#000 26px 29px,transparent 30px)}
+.hwk::after{content:"";position:absolute;left:19px;top:4px;width:2px;height:12px;border-radius:1px;background:#f2f5f8;
+  transform-origin:1px 16px;transform:rotate(var(--a,0deg));box-shadow:0 0 3px rgba(255,255,255,.5)}
+/* interruptor de palanca + piloto */
+html.skin-chrome .pn-sw{left:104px;top:96px;width:60px;height:70px;display:block;font:400 8px "Pix" !important;letter-spacing:1px;color:#2a3340 !important;text-transform:uppercase}
+html.skin-chrome .pn-sw > span:last-child{position:absolute;left:-10px;right:-10px;top:56px;text-align:center}
+html.skin-chrome .pn-sw .sw{position:absolute;left:19px;top:22px;width:22px;height:22px;border-radius:50%;
+  background:radial-gradient(circle,#f4f6f8 0 5px,#9aa1aa 6px,#d8dce1 8px,#7c838c 11px) !important;box-shadow:none !important}
+html.skin-chrome .pn-sw .sw::after{left:8px;top:-12px;width:6px;height:20px;border-radius:3px;background:linear-gradient(90deg,#8d949c,#f7f8fa 45%,#a9b0b8) !important;
+  box-shadow:0 2px 3px rgba(0,0,0,.35);transform-origin:3px 19px;transform:rotate(22deg);transition:transform .15s}
+html.skin-chrome .pn-sw input:checked+.sw::after{left:8px;transform:rotate(-22deg)}
+.hwled{position:absolute;left:26px;top:-4px;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#56606d,#20262e);
+  box-shadow:inset 0 1px 1px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.6)}
+html.skin-chrome .pn-sw input:checked ~ .hwled{background:radial-gradient(circle at 40% 35%,#eaffd9,#62d63a 55%,#2f9a12);box-shadow:0 0 7px 2px rgba(110,230,60,.75)}
+html.skin-chrome .pn-sw.na{opacity:.45}
+/* aviso amarillo */
+html.skin-chrome .pn-warn{left:12px;right:12px;top:156px;padding:5px 8px 5px 5px;border-radius:4px;font:400 7px/1.3 "Pix" !important;letter-spacing:.5px;color:#1d1a10 !important;text-transform:uppercase;
+  background:linear-gradient(180deg,#ffd84a,#f2bd17) !important;box-shadow:0 1px 2px rgba(0,0,0,.35),inset 0 0 0 1px rgba(0,0,0,.25) !important;border:none !important}
+html.skin-chrome .pn-warn b{width:16px;height:14px;border-radius:0;background:#1d1a10 !important;color:#ffd84a !important;clip-path:polygon(50% 0,100% 100%,0 100%);padding-top:3px;font:700 10px "Segoe UI" !important;box-shadow:none !important}
+html.skin-chrome .pn .err{left:12px;right:12px;bottom:-22px;font:400 13px "VT";color:#ff8a7a;text-align:center}
+/* jacks */
+.hwj{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;
+  background:radial-gradient(circle,#050608 0 5px,#2a2e33 5.5px 6.5px,#9ea5ae 7px,#f4f6f8 10px,#b7bdc5 12px,#6f767f 14.5px,rgba(0,0,0,0) 15px);
+  box-shadow:0 2px 3px rgba(0,0,0,.4)}
+.hwjl{position:absolute;font:400 8px "Pix";letter-spacing:1px;color:#3d4652;white-space:nowrap}
+/* Bubblepad: placa oscura */
+html.skin-chrome .pn-pad{background:repeating-linear-gradient(90deg,rgba(255,255,255,0) 0 2px,rgba(255,255,255,.04) 2px 3px,rgba(0,0,0,.05) 3px 5px),
+    linear-gradient(180deg,#4a515b 0%,#353b44 55%,#2a2f37 100%);
+  box-shadow:0 0 0 1px #15181d,0 3px 0 1px #101317,0 8px 14px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.25),inset 0 -2px 3px rgba(0,0,0,.3)}
+html.skin-chrome .pn-pad .pn-t{left:0;right:0;top:16px;text-align:center;background:none;box-shadow:none;clip-path:none;transform:none;
+  font-size:12px !important;letter-spacing:4px;color:#e3e9f0 !important;text-shadow:0 -1px 0 rgba(0,0,0,.6)}
+html.skin-chrome .pn-pad .hwjl{color:#aab6c4}
+.hwsub{left:16px;top:44px;width:138px;height:58px;border-radius:7px;
+  background:linear-gradient(180deg,#f3f5f7,#d4d9df);box-shadow:0 0 0 1px #2c3138,0 2px 4px rgba(0,0,0,.5),inset 0 1px 0 #fff}
+.hwsub > span{position:absolute;left:10px;top:7px;font:400 7px "Pix";letter-spacing:1px;color:#545c66}
+.hwlcd{position:absolute;left:8px;right:8px;top:20px;height:28px;border-radius:5px;display:grid;place-items:center;font:400 17px/1 "VT";color:#d6ecff;
+  text-shadow:0 0 6px rgba(120,190,255,.7);background:linear-gradient(180deg,#123a8a,#0a2158);box-shadow:inset 0 2px 5px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.5)}
+.hwvu{position:absolute;left:34px;display:flex;gap:2px}
+.hwvu i{width:5px;height:12px;border-radius:1px;background:#1e2a1c;box-shadow:inset 0 0 0 1px rgba(0,0,0,.5)}
+.hwvu i.on{background:#6ee04a;box-shadow:0 0 5px rgba(110,230,60,.8)}
+.hwvu i.on.y{background:#ffd23a;box-shadow:0 0 5px rgba(255,210,60,.8)}
+.hwvu i.on.r{background:#ff5544;box-shadow:0 0 5px rgba(255,80,60,.8)}
+html.skin-chrome .patch-tip{left:24px;right:24px;bottom:16px;padding:0;border:none !important;background:none !important;box-shadow:none !important;
+  font:400 8.5px/1.6 "Pix" !important;letter-spacing:1px;color:#8b96a3 !important;text-transform:uppercase}
+html.skin-chrome .patch-tip b{color:#d6ecff;font-weight:400}
+/* cables por encima de las placas */
+html.skin-chrome .patch svg.wires{z-index:3;pointer-events:none}
+.hwscrew{position:absolute;width:11px;height:11px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 38% 32%,#fdfdfd 0%,#c4c9cf 45%,#7d848d 100%);box-shadow:0 1px 1px rgba(0,0,0,.45),inset 0 0 0 1px rgba(0,0,0,.25)}
+.hwscrew::after{content:"";position:absolute;left:1.5px;right:1.5px;top:4.5px;height:2px;background:#5b626b;border-radius:1px;transform:rotate(var(--r,35deg));box-shadow:0 1px 0 rgba(255,255,255,.6)}
+.hwsub .hwscrew{transform:scale(.7)}
+/* cables */
+.hwc .sh{stroke:rgba(0,0,0,.35);stroke-width:9;fill:none;stroke-linecap:round;transform:translate(2px,6px);filter:blur(2.5px)}
+.hwc .ed{stroke-width:8;fill:none;stroke-linecap:round}
+.hwc .co{stroke-width:5.5;fill:none;stroke-linecap:round}
+.hwc .hl{stroke-width:1.6;fill:none;stroke-linecap:round;opacity:.85;transform:translate(-1px,-1.5px)}
+.hwc .sig{stroke-width:14;fill:none;stroke-linecap:round;filter:blur(4px);opacity:0;transition:opacity .12s}
+.hwc.off .co,.hwc.off .ed{filter:saturate(.25) brightness(.8)}
+/* de noche: grafito y pantallas ámbar */
+html.skin-chrome.night .pn{background:repeating-linear-gradient(90deg,rgba(255,255,255,0) 0 2px,rgba(255,255,255,.035) 2px 3px,rgba(0,0,0,.05) 3px 5px),
+    linear-gradient(180deg,#565d67 0%,#40464f 50%,#30353d 100%);color:#c9d2de}
+html.skin-chrome.night .pn-pad{background:linear-gradient(180deg,#30353d,#1f2329)}
+html.skin-chrome.night .pn-vol,html.skin-chrome.night .pn-sw,html.skin-chrome.night .hwjl{color:#b8c2ce !important}
+html.skin-chrome.night .pn-dev,html.skin-chrome.night .hwlcd{color:#ffd9a8 !important;text-shadow:0 0 6px rgba(255,150,40,.7);background:linear-gradient(180deg,#3a2a12,#1c1408) !important}
+html.skin-chrome.night .pn-dev i{color:#ffbf70 !important}
+html.skin-chrome.night .hwsub{background:linear-gradient(180deg,#5a616b,#3e444c);box-shadow:0 0 0 1px #15181d,inset 0 1px 0 rgba(255,255,255,.2)}
+html.skin-chrome.night .hwsub > span{color:#b8c2ce}
+html.skin-chrome.night .patch-tip b{color:#ffd9a8}
 </style>
 </head>
 <body>
@@ -992,43 +1104,52 @@ html.skin-chrome.night .ptab input{background:rgba(40,20,0,.55);color:#ffd9a8;bo
       <button class="wbtn x" id="patchClose" data-i18n-title="close" title="Cerrar">×</button></div>
     <svg class="wires" id="wires" viewBox="0 0 586 562"></svg>
 
-    <div class="pn small" style="left:293px;top:70px">
+    <div class="pn small pn-snd" style="left:293px;top:70px">
       <div class="pn-ico" data-ico="note"></div>
       <div><div class="pn-t" data-i18n="n_sounds">Tus sonidos</div><div class="pn-s" id="sndCount"></div></div>
     </div>
 
-    <div class="pn" style="left:100px;top:216px">
+    <div class="pn pn-mic" style="left:100px;top:216px">
       <div class="pn-ico" data-ico="mic"></div>
+      <i class="hwj chrome-only" style="left:144px;top:186px"></i><span class="hwjl chrome-only r" style="right:56px;top:182px" data-i18n="hw_voice_out">VOZ OUT</span>
       <div class="pn-t" data-i18n="n_mic">Tu micrófono</div>
       <div class="pn-s" data-i18n="n_mic_sub">Entrada de voz</div>
       <button class="pn-dev" data-kind="mic"><span></span><i>▼</i></button>
-      <div class="pn-vol"><span data-i18n="volume">Volumen</span><input type="range" id="vol_mic" min="0" max="2" step="0.01"><b id="vol_mic_v"></b></div>
-      <label class="pn-sw" id="denoiseSw"><input type="checkbox" id="denoiseChk"><span class="sw"></span><span data-i18n="denoise">Reducir ruido</span></label>
+      <div class="pn-vol"><span data-i18n="volume">Volumen</span><input type="range" id="vol_mic" min="0" max="2" step="0.01"><b id="vol_mic_v"></b><i class="hwk chrome-only" data-for="vol_mic"></i></div>
+      <label class="pn-sw" id="denoiseSw"><input type="checkbox" id="denoiseChk"><span class="sw"></span><i class="hwled chrome-only"></i><span data-i18n="denoise">Reducir ruido</span></label>
       <div class="err" id="err_mic"></div>
     </div>
 
-    <div class="pn pad" style="left:293px;top:204px">
+    <div class="pn pad pn-pad" style="left:293px;top:204px">
       <div class="pn-ico" data-ico="pad"></div>
       <div class="pn-t">BUBBLEPAD</div>
       <div class="pn-s" data-i18n="n_pad_sub">Mezcla voz y sonidos</div>
+      <div class="hwsub chrome-only"><span data-i18n="hw_sounds">SONIDOS</span><div class="hwlcd" id="padCount"></div></div>
+      <div class="hwvu chrome-only" id="padVuV" style="top:120px"></div><div class="hwvu chrome-only" id="padVuS" style="top:138px"></div>
+      <span class="hwjl chrome-only" style="left:20px;top:120px">V</span><span class="hwjl chrome-only" style="left:20px;top:138px">S</span>
+      <i class="hwj chrome-only" style="left:34px;top:186px"></i><span class="hwjl chrome-only" style="left:56px;top:182px" data-i18n="hw_voice_in">VOZ IN</span>
+      <i class="hwj chrome-only" style="left:136px;top:172px"></i><span class="hwjl chrome-only r" style="right:56px;top:168px" data-i18n="hw_to_call">LLAMADA</span>
+      <i class="hwj chrome-only" style="left:136px;top:210px"></i><span class="hwjl chrome-only r" style="right:56px;top:206px" data-i18n="hw_to_me">CASCOS</span>
     </div>
 
-    <div class="pn" style="left:481px;top:106px">
+    <div class="pn pn-call" style="left:481px;top:106px">
       <div class="pn-ico" data-ico="call"></div>
+      <i class="hwj chrome-only" style="left:34px;top:118px"></i><span class="hwjl chrome-only" style="left:28px;top:138px">IN</span>
       <div class="pn-t" data-i18n="n_call">La llamada</div>
       <div class="pn-s" data-i18n="n_call_sub">Discord y juegos · voz + sonidos</div>
       <button class="pn-dev" data-kind="cable"><span></span><i>▼</i></button>
-      <div class="pn-vol"><span data-i18n="sounds">Sonidos</span><input type="range" id="vol_call" min="0" max="2" step="0.01"><b id="vol_call_v"></b></div>
+      <div class="pn-vol"><span data-i18n="sounds">Sonidos</span><input type="range" id="vol_call" min="0" max="2" step="0.01"><b id="vol_call_v"></b><i class="hwk chrome-only" data-for="vol_call"></i></div>
       <div class="pn-warn" data-i18n-title="warn_ns_tip" title=""><b>!</b><span data-i18n="warn_ns">Quita la supresión de ruido de la llamada</span></div>
       <div class="err" id="err_cable"></div>
     </div>
 
-    <div class="pn" style="left:481px;top:326px">
+    <div class="pn pn-me" style="left:481px;top:326px">
       <div class="pn-ico" data-ico="hp"></div>
+      <i class="hwj chrome-only" style="left:34px;top:112px"></i><span class="hwjl chrome-only" style="left:28px;top:132px">IN</span>
       <div class="pn-t" data-i18n="n_me">Tus cascos</div>
       <div class="pn-s" data-i18n="n_me_sub">Solo sonidos, sin tu voz</div>
       <button class="pn-dev" data-kind="monitor"><span></span><i>▼</i></button>
-      <div class="pn-vol"><span data-i18n="sounds">Sonidos</span><input type="range" id="vol_me" min="0" max="2" step="0.01"><b id="vol_me_v"></b></div>
+      <div class="pn-vol"><span data-i18n="sounds">Sonidos</span><input type="range" id="vol_me" min="0" max="2" step="0.01"><b id="vol_me_v"></b><i class="hwk chrome-only" data-for="vol_me"></i></div>
       <div class="err" id="err_monitor"></div>
     </div>
 
@@ -1108,7 +1229,7 @@ function decorate(){
 
 /* ═════════ IDIOMAS ═════════ */
 const I18N={
- es:{page_main:'Sonidos',page_main_tip:'Página principal: los sonidos sueltos de tu carpeta · clic derecho: atajo',page_tip:'Arrastra aquí un sonido para moverlo · clic derecho: atajo o borrar',pm_hotkey:'⌨ Atajo para ir a esta página…',pm_delete:'✕ Borrar página (si está vacía)',page_next:'Página siguiente',page_prev:'Página anterior',pages_hk_help:'Cada página tiene sus propios atajos de sonido: la misma tecla puede tocar un sonido distinto en cada una. Al cambiar de página con un atajo oirás unos pitidos solo tú (uno por la primera página, dos por la segunda…). Para ponerle atajo a una página: clic derecho en su pestaña.',page_new:'Nueva página',page_name:'Nombre…',page_del:'¿Borrar?',page_empty:'Página vacía. Añade sonidos con <b>+</b> o arrástralos aquí desde otra página.',skin_title:'ASPECTO',skin_chrome:'Chrome',skin_aqua:'Aqua (clásico)',lh_sound:'SONIDO',lh_wave:'ONDA',lh_dur:'DUR',lh_key:'ATAJO',list_hk:'+ atajo',cc_title:'Falta el micro virtual',cc_title_ok:'VB-CABLE instalado',cc_text:'Bubblepad necesita <b>VB-CABLE</b> (gratis, de VB-Audio) para que Discord y los juegos oigan tus sonidos. Se descarga de su web oficial y se abre su instalador: ahí pulsa <b>Install Driver</b>.',cc_install:'Instalar VB-CABLE',cc_web:'Web oficial',cc_dl:'DESCARGANDO {p}%',cc_ex:'PREPARANDO',cc_inst:'INSTALADOR ABIERTO',cc_inst_text:'Se ha abierto el instalador de VB-CABLE. Acepta el aviso de Windows y pulsa <b>Install Driver</b>.',cc_done:'¡Instalado! Reinicia el PC para terminar; después Bubblepad lo usará solo.',cc_restart:'Reiniciar ahora',cc_later:'Más tarde',cc_cancel:'Instalación cancelada. Puedes volver a intentarlo cuando quieras.',cc_err:'No se ha podido descargar ({e}). Prueba desde la web oficial.',cc_retry:'Reintentar',cc_hide:'Ocultar',games_title:'JUEGOS',boot_title:'AL ENCENDER EL PC',boot_start:'Abrir Bubblepad al encender el PC',boot_help:'Se abre escondido en la bandeja, así el micro virtual siempre está listo para Discord. Si además está marcado «Abrir siempre como administrador», Windows pedirá permiso al arrancar.',games_help:'Los atajos ya funcionan dentro de juegos como League of Legends. Si algún juego que se abre como administrador no los recibe, reinicia Bubblepad como administrador.',admin_btn:'Reiniciar como administrador',admin_on:'✓ Funcionando como administrador',admin_start:'Abrir siempre como administrador',vu_me:'YO',idle:'SILENCIO',add:'Añadir sonidos',folder:'Carpeta de sonidos',refresh:'Actualizar dispositivos y sonidos',settings:'Audio, atajos e idioma',
+ es:{hw_voice_out:'VOZ OUT',hw_voice_in:'VOZ IN',hw_to_call:'LLAMADA',hw_to_me:'CASCOS',hw_sounds:'SONIDOS',hw_page:'PÁG.',page_main:'Sonidos',page_main_tip:'Página principal: los sonidos sueltos de tu carpeta · clic derecho: atajo',page_tip:'Arrastra aquí un sonido para moverlo · clic derecho: atajo o borrar',pm_hotkey:'⌨ Atajo para ir a esta página…',pm_delete:'✕ Borrar página (si está vacía)',page_next:'Página siguiente',page_prev:'Página anterior',pages_hk_help:'Cada página tiene sus propios atajos de sonido: la misma tecla puede tocar un sonido distinto en cada una. Al cambiar de página con un atajo oirás unos pitidos solo tú (uno por la primera página, dos por la segunda…). Para ponerle atajo a una página: clic derecho en su pestaña.',page_new:'Nueva página',page_name:'Nombre…',page_del:'¿Borrar?',page_empty:'Página vacía. Añade sonidos con <b>+</b> o arrástralos aquí desde otra página.',skin_title:'ASPECTO',skin_chrome:'Chrome',skin_aqua:'Aqua (clásico)',lh_sound:'SONIDO',lh_wave:'ONDA',lh_dur:'DUR',lh_key:'ATAJO',list_hk:'+ atajo',cc_title:'Falta el micro virtual',cc_title_ok:'VB-CABLE instalado',cc_text:'Bubblepad necesita <b>VB-CABLE</b> (gratis, de VB-Audio) para que Discord y los juegos oigan tus sonidos. Se descarga de su web oficial y se abre su instalador: ahí pulsa <b>Install Driver</b>.',cc_install:'Instalar VB-CABLE',cc_web:'Web oficial',cc_dl:'DESCARGANDO {p}%',cc_ex:'PREPARANDO',cc_inst:'INSTALADOR ABIERTO',cc_inst_text:'Se ha abierto el instalador de VB-CABLE. Acepta el aviso de Windows y pulsa <b>Install Driver</b>.',cc_done:'¡Instalado! Reinicia el PC para terminar; después Bubblepad lo usará solo.',cc_restart:'Reiniciar ahora',cc_later:'Más tarde',cc_cancel:'Instalación cancelada. Puedes volver a intentarlo cuando quieras.',cc_err:'No se ha podido descargar ({e}). Prueba desde la web oficial.',cc_retry:'Reintentar',cc_hide:'Ocultar',games_title:'JUEGOS',boot_title:'AL ENCENDER EL PC',boot_start:'Abrir Bubblepad al encender el PC',boot_help:'Se abre escondido en la bandeja, así el micro virtual siempre está listo para Discord. Si además está marcado «Abrir siempre como administrador», Windows pedirá permiso al arrancar.',games_help:'Los atajos ya funcionan dentro de juegos como League of Legends. Si algún juego que se abre como administrador no los recibe, reinicia Bubblepad como administrador.',admin_btn:'Reiniciar como administrador',admin_on:'✓ Funcionando como administrador',admin_start:'Abrir siempre como administrador',vu_me:'YO',idle:'SILENCIO',add:'Añadir sonidos',folder:'Carpeta de sonidos',refresh:'Actualizar dispositivos y sonidos',settings:'Audio, atajos e idioma',
   your_voice:'Tu voz',sounds_call:'Sonidos en llamada',sounds_me:'Sonidos para mí',stop_all_esc:'Parar todos los sonidos (Esc)',stop_all_short:'Parar todo',
   mute_tip:'Activar / silenciar tu micrófono',sounds_title:'SONIDOS',search:'Buscar…',sort_tip:'Sonidos con atajo primero',theme_tip:'Día / noche',
   minimize:'Minimizar',hide_tray:'Esconder en la bandeja',ed_play:'Escuchar la selección en tus cascos (Espacio)',ed_stop:'Parar',
@@ -1127,7 +1248,7 @@ const I18N={
   del_q:'¿Eliminar «{n}»?',loading:'CARGANDO',unreadable:'NO SE PUEDE LEER',auto_done:'Silencios quitados: {a} → {b}',
   trim_saved:'Recorte guardado (el archivo original no se toca)',size:'TAMAÑO',grip:'Arrastra para cambiar el tamaño · doble clic: 100% · también Ctrl + rueda',
   keys:{ctrl:'Ctrl',alt:'Alt',shift:'Mayús',win:'Win',Space:'Espacio',Enter:'Intro',Backspace:'Retroceso',Delete:'Supr',Home:'Inicio',End:'Fin',PageUp:'RePág',PageDown:'AvPág',Pause:'Pausa',ScrollLock:'BloqDespl',PrintScreen:'ImprPant'}},
- en:{page_main:'Sounds',page_main_tip:'Main page: the loose sounds in your folder · right-click: hotkey',page_tip:'Drop a sound here to move it · right-click: hotkey or delete',pm_hotkey:'⌨ Hotkey to go to this page…',pm_delete:'✕ Delete page (if empty)',page_next:'Next page',page_prev:'Previous page',pages_hk_help:'Each page has its own sound hotkeys: the same key can play a different sound on each page. When you switch page with a hotkey you\'ll hear short beeps only you can hear (one for the first page, two for the second…). To give a page a hotkey: right-click its tab.',page_new:'New page',page_name:'Name…',page_del:'Delete?',page_empty:'Empty page. Add sounds with <b>+</b> or drag them here from another page.',skin_title:'LOOK',skin_chrome:'Chrome',skin_aqua:'Aqua (classic)',lh_sound:'SOUND',lh_wave:'WAVE',lh_dur:'DUR',lh_key:'HOTKEY',list_hk:'+ hotkey',cc_title:'Virtual mic missing',cc_title_ok:'VB-CABLE installed',cc_text:'Bubblepad needs <b>VB-CABLE</b> (free, by VB-Audio) so Discord and games can hear your sounds. It downloads from the official site and opens its installer: there, press <b>Install Driver</b>.',cc_install:'Install VB-CABLE',cc_web:'Official site',cc_dl:'DOWNLOADING {p}%',cc_ex:'PREPARING',cc_inst:'INSTALLER OPEN',cc_inst_text:'The VB-CABLE installer is open. Accept the Windows prompt and press <b>Install Driver</b>.',cc_done:'Installed! Restart your PC to finish; after that Bubblepad will use it automatically.',cc_restart:'Restart now',cc_later:'Later',cc_cancel:'Installation cancelled. You can try again any time.',cc_err:'Download failed ({e}). Try the official site.',cc_retry:'Retry',cc_hide:'Hide',games_title:'GAMES',boot_title:'WHEN YOUR PC STARTS',boot_start:'Open Bubblepad when your PC starts',boot_help:'It opens hidden in the tray, so the virtual mic is always ready for Discord. If “Always open as administrator” is also ticked, Windows will ask for permission at startup.',games_help:'Hotkeys already work inside games like League of Legends. If a game that runs as administrator doesn\'t get them, restart Bubblepad as administrator.',admin_btn:'Restart as administrator',admin_on:'✓ Running as administrator',admin_start:'Always open as administrator',vu_me:'ME',idle:'IDLE',add:'Add sounds',folder:'Sounds folder',refresh:'Refresh devices and sounds',settings:'Audio, hotkeys & language',
+ en:{hw_voice_out:'VOICE OUT',hw_voice_in:'VOICE IN',hw_to_call:'CALL',hw_to_me:'PHONES',hw_sounds:'SOUNDS',hw_page:'PG.',page_main:'Sounds',page_main_tip:'Main page: the loose sounds in your folder · right-click: hotkey',page_tip:'Drop a sound here to move it · right-click: hotkey or delete',pm_hotkey:'⌨ Hotkey to go to this page…',pm_delete:'✕ Delete page (if empty)',page_next:'Next page',page_prev:'Previous page',pages_hk_help:'Each page has its own sound hotkeys: the same key can play a different sound on each page. When you switch page with a hotkey you\'ll hear short beeps only you can hear (one for the first page, two for the second…). To give a page a hotkey: right-click its tab.',page_new:'New page',page_name:'Name…',page_del:'Delete?',page_empty:'Empty page. Add sounds with <b>+</b> or drag them here from another page.',skin_title:'LOOK',skin_chrome:'Chrome',skin_aqua:'Aqua (classic)',lh_sound:'SOUND',lh_wave:'WAVE',lh_dur:'DUR',lh_key:'HOTKEY',list_hk:'+ hotkey',cc_title:'Virtual mic missing',cc_title_ok:'VB-CABLE installed',cc_text:'Bubblepad needs <b>VB-CABLE</b> (free, by VB-Audio) so Discord and games can hear your sounds. It downloads from the official site and opens its installer: there, press <b>Install Driver</b>.',cc_install:'Install VB-CABLE',cc_web:'Official site',cc_dl:'DOWNLOADING {p}%',cc_ex:'PREPARING',cc_inst:'INSTALLER OPEN',cc_inst_text:'The VB-CABLE installer is open. Accept the Windows prompt and press <b>Install Driver</b>.',cc_done:'Installed! Restart your PC to finish; after that Bubblepad will use it automatically.',cc_restart:'Restart now',cc_later:'Later',cc_cancel:'Installation cancelled. You can try again any time.',cc_err:'Download failed ({e}). Try the official site.',cc_retry:'Retry',cc_hide:'Hide',games_title:'GAMES',boot_title:'WHEN YOUR PC STARTS',boot_start:'Open Bubblepad when your PC starts',boot_help:'It opens hidden in the tray, so the virtual mic is always ready for Discord. If “Always open as administrator” is also ticked, Windows will ask for permission at startup.',games_help:'Hotkeys already work inside games like League of Legends. If a game that runs as administrator doesn\'t get them, restart Bubblepad as administrator.',admin_btn:'Restart as administrator',admin_on:'✓ Running as administrator',admin_start:'Always open as administrator',vu_me:'ME',idle:'IDLE',add:'Add sounds',folder:'Sounds folder',refresh:'Refresh devices and sounds',settings:'Audio, hotkeys & language',
   your_voice:'Your voice',sounds_call:'Sounds in call',sounds_me:'Sounds for me',stop_all_esc:'Stop all sounds (Esc)',stop_all_short:'Stop all',
   mute_tip:'Mute / unmute your microphone',sounds_title:'SOUNDS',search:'Search…',sort_tip:'Sounds with hotkeys first',theme_tip:'Day / night',
   minimize:'Minimize',hide_tray:'Hide to tray',ed_play:'Preview the selection in your headphones (Space)',ed_stop:'Stop',
@@ -1183,7 +1304,7 @@ function fillSelect(sel,list,value){
   sel.value=list.includes(value)?value:'';
 }
 function setVol(k,v){
-  $(k).value=v; $(k+'_v').textContent=Math.round(v*100)+'%';
+  $(k).value=v; $(k+'_v').textContent=Math.round(v*100)+'%'; syncKnobs();
   if(k==='vol_mic'){$('vol_mic_main').value=v;$('vv_lbl').textContent=Math.round(v*100)+'%';}
   if(k==='vol_call'){$('vol_call_main').value=v;$('vc_lbl').textContent=Math.round(v*100)+'%';}
   if(k==='vol_me'){$('vol_me_main').value=v;$('vm_lbl').textContent=Math.round(v*100)+'%';}
@@ -1274,6 +1395,7 @@ function applySkin(sk){
   $('chassis').src=SKIN==='chrome'?'img/chrome-day.webp':'img/chassis-day.webp';
   $('chassisN').src=SKIN==='chrome'?'img/chrome-night.webp':'img/chassis-night.webp';
   document.querySelectorAll('[data-skin]').forEach(b=>b.classList.toggle('on',b.dataset.skin===SKIN));
+  if($('wires')) buildPatch();
   renderGrid();
 }
 function askWaves(){ const now=Date.now(); if(now-wavesAsked<300) return; wavesAsked=now; bridge.requestWaves(); }
@@ -1754,7 +1876,43 @@ const WIRES={
   call:{d:'M339,236 C394,236 392,140 447,140',c:'#1f8be6'},
   me:{d:'M339,264 C394,264 392,360 447,360',c:'#22b6c8'}
 };
+// En Chrome: cables de verdad entre los jacks de las placas (rojo voz, verde mezcla, amarillo sonidos)
+const HWIRES={
+  mic:{a:[160,340],b:[242,320],c1:[180,414],c2:[232,414],c:'#d8433a'},
+  call:{a:[344,306],b:[434,220],c1:[390,324],c2:[420,284],c:'#3fbf5a'},
+  me:{a:[344,344],b:[434,426],c1:[370,434],c2:[400,474],c:'#e7b923'}
+};
+function shadeHex(hex,f){const n=parseInt(hex.slice(1),16),m=c=>Math.max(0,Math.min(255,Math.round(f<0?c*(1+f):c+(255-c)*f)));
+  return '#'+[n>>16,n>>8&255,n&255].map(m).map(v=>v.toString(16).padStart(2,'0')).join('');}
+function buildPatchHW(){
+  let h='<defs>';
+  for(const [k,w] of Object.entries(HWIRES)) h+=`<radialGradient id="pg_${k}" cx="40%" cy="32%" r="70%"><stop offset="0" stop-color="${shadeHex(w.c,.6)}"/><stop offset=".55" stop-color="${w.c}"/><stop offset="1" stop-color="${shadeHex(w.c,-.45)}"/></radialGradient>`;
+  h+='</defs>';
+  for(const [k,w] of Object.entries(HWIRES)){
+    const d=`M${w.a} C${w.c1} ${w.c2} ${w.b}`;
+    h+=`<g class="hwc" id="w_${k}"><path class="sh" d="${d}"/><path class="sig" d="${d}" stroke="${w.c}"/><path class="ed" d="${d}" stroke="${shadeHex(w.c,-.55)}"/><path class="co" d="${d}" stroke="${w.c}"/><path class="hl" d="${d}" stroke="${shadeHex(w.c,.55)}"/>`+
+      [w.a,w.b].map(([x,y])=>`<circle cx="${x+1}" cy="${y+3}" r="11" fill="rgba(0,0,0,.35)" style="filter:blur(2px)"/><circle cx="${x}" cy="${y}" r="10.5" fill="${shadeHex(w.c,-.5)}"/><circle cx="${x}" cy="${y}" r="9" fill="url(#pg_${k})"/><circle cx="${x}" cy="${y}" r="4" fill="${shadeHex(w.c,-.35)}"/><circle cx="${x-1}" cy="${y-1.2}" r="1.6" fill="rgba(255,255,255,.7)"/>`).join('')+'</g>';
+  }
+  $('wires').innerHTML=h;
+}
+// Ruedas: arrastrar arriba/abajo, rueda del ratón o doble clic (vuelve al 100 %). Mueven el deslizador oculto.
+function syncKnobs(){ document.querySelectorAll('.hwk').forEach(k=>{ const r=$(k.dataset.for); const t=(+r.value-+r.min)/(+r.max-+r.min); k.style.setProperty('--a',(-135+270*t)+'deg'); }); }
+function wireKnobs(){
+  document.querySelectorAll('.hwk').forEach(k=>{
+    const r=$(k.dataset.for), wrap=k.parentElement;
+    const set=v=>{ v=Math.max(+r.min,Math.min(+r.max,Math.round(v*100)/100)); if(v===+r.value) return; r.value=v; r.dispatchEvent(new Event('input')); syncKnobs(); };
+    k.addEventListener('pointerdown',e=>{ e.preventDefault(); k.setPointerCapture(e.pointerId); const y0=e.clientY, v0=+r.value; wrap.classList.add('turning');
+      const mv=ev=>set(v0+(y0-ev.clientY)*(ev.shiftKey?.002:.01));
+      const up=()=>{ k.removeEventListener('pointermove',mv); k.removeEventListener('pointerup',up); wrap.classList.remove('turning'); };
+      k.addEventListener('pointermove',mv); k.addEventListener('pointerup',up); });
+    k.addEventListener('wheel',e=>{ e.preventDefault(); set(+r.value+(e.deltaY<0?.05:-.05)); },{passive:false});
+    k.addEventListener('dblclick',()=>set(1));
+  });
+}
+function vuHW(id,v){ const el=$(id); if(!el) return; if(!el.children.length) el.innerHTML='<i></i>'.repeat(16);
+  const n=Math.round(Math.sqrt(Math.min(1,v))*16); [...el.children].forEach((c,i)=>c.className=i<n?('on'+(i>=14?' r':i>=11?' y':'')):''); }
 function buildPatch(){
+  if(SKIN==='chrome'){ buildPatchHW(); return; }
   document.querySelectorAll('[data-ico]').forEach(el=>el.innerHTML=ICO[el.dataset.ico]);
   const svg=$('wires'); let h=`<defs><radialGradient id="plugG" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#b9c4cf"/><stop offset="1" stop-color="#6b7886"/></radialGradient></defs>`;
   for(const [k,w] of Object.entries(WIRES)){
@@ -1775,6 +1933,9 @@ function renderPatch(){
   chk.checked=ok&&!!S.denoise; chk.disabled=!ok; $('denoiseSw').classList.toggle('na',!ok);
   $('denoiseSw').title=T(ok?'denoise_tip':'denoise_na');
   $('sndCount').textContent=T('n_sounds_sub',{n:(S.sounds||[]).length});
+  { const pages=['',...(S.pages||[])], i=Math.max(0,pages.indexOf(PAGE));
+    $('padCount').textContent=(S.sounds||[]).length+(pages.length>1?` · ${T('hw_page')} ${i+1}/${pages.length}`:''); }
+  syncKnobs();
   $('w_mic').classList.toggle('off',!S.mic||S.mic_muted);
   $('w_call').classList.toggle('off',!S.cable);
   $('w_me').classList.toggle('off',!S.monitor);
@@ -1783,6 +1944,7 @@ function renderPatch(){
 function wireLevels(lv,nowPlaying){
   const set=(id,v)=>{const s=document.querySelector(`#${id} .sig`); if(s) s.style.opacity=Math.min(1,v*2.2).toFixed(2);};
   set('w_mic',S&&S.mic_muted?0:lv.mic); set('w_snd',nowPlaying?.9:0); set('w_call',lv.call); set('w_me',lv.me);
+  if(SKIN==='chrome'&&$('patch').classList.contains('open')){ vuHW('padVuV',S&&S.mic_muted?0:lv.mic); vuHW('padVuS',lv.me); }
 }
 function openPatch(on){ $('patch').classList.toggle('open',on); if(on){ openDrawer(false); renderPatch(); } else closePicker(); }
 function closePicker(){ $('picker').classList.remove('show'); }
@@ -1801,7 +1963,11 @@ function openPicker(kind,btn){
   pk.style.left=x+'px'; pk.style.top=y+'px';
 }
 function wirePatch(){
-  buildPatch();
+  buildPatch(); wireKnobs();
+  // tornillos en las esquinas de cada placa (solo se ven en Chrome)
+  document.querySelectorAll('.pn:not(.pn-snd), .hwsub').forEach(pl=>{ const sub=pl.classList.contains('hwsub'), i=sub?3:6;
+    [[i,i,'left','top'],[i,i,'right','top'],[i,i,'left','bottom'],[i,i,'right','bottom']].forEach(([a,b,h,v],n)=>{
+      const sc=document.createElement('i'); sc.className='hwscrew chrome-only'; sc.style[h]=a+'px'; sc.style[v]=b+'px'; sc.style.setProperty('--r',(25+n*37)+'deg'); pl.appendChild(sc); }); });
   document.querySelectorAll('.pn-dev').forEach(b=>b.onclick=e=>{ e.stopPropagation();
     const pk=$('picker'); if(pk.classList.contains('show')&&pk.dataset.kind===b.dataset.kind){closePicker();return;}
     pk.dataset.kind=b.dataset.kind; openPicker(b.dataset.kind,b); });
