@@ -29,7 +29,13 @@ SolidCompression=yes
 WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-CloseApplications=yes
+; Instalar encima de una versión anterior: mismo AppId = misma carpeta y sin preguntar dónde.
+; config.json y la carpeta de sonidos no forman parte del paquete, así que se conservan.
+DisableDirPage=auto
+UsePreviousAppDir=yes
+; Bubblepad vive en la bandeja: lo cerramos antes de copiar (si no, sus archivos están en uso)
+CloseApplications=force
+RestartApplications=no
 
 [Languages]
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
@@ -45,6 +51,17 @@ Source: "..\dist\Bubblepad\*"; DestDir: "{app}"; Flags: ignoreversion recursesub
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExe}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExe}"; Tasks: desktopicon
+
+[Code]
+// Cierra Bubblepad (aunque esté escondido en la bandeja) antes de actualizar sus archivos
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  ResultCode: Integer;
+begin
+  Exec(ExpandConstant('{sys}\taskkill.exe'), '/IM {#MyAppExe} /F', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  Sleep(600);
+  Result := '';
+end;
 
 [Run]
 Filename: "{app}\{#MyAppExe}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
