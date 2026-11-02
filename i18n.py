@@ -3,6 +3,7 @@ La interfaz web tiene su propio diccionario en ui/index.html."""
 STRINGS = {
     "es": {
         "tray_open": "Abrir Bubblepad",
+        "already_open": "Bubblepad ya está abierto (quizá como administrador). Lo tienes en la bandeja, junto al reloj.\n\nSi abrieras dos a la vez, tu voz sonaría duplicada, con eco.",
         "tray_mute": "Silenciar micrófono",
         "tray_stop": "Parar todos los sonidos",
         "tray_quit": "Salir",
@@ -23,6 +24,7 @@ STRINGS = {
     },
     "en": {
         "tray_open": "Open Bubblepad",
+        "already_open": "Bubblepad is already open (maybe as administrator). Look for it in the tray, next to the clock.\n\nRunning two at once would make your voice sound doubled, with an echo.",
         "tray_mute": "Mute microphone",
         "tray_stop": "Stop all sounds",
         "tray_quit": "Quit",

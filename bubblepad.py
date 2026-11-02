@@ -143,6 +143,43 @@ def page_dir(page):
     return os.path.join(config.SOUNDS_DIR, page) if page else config.SOUNDS_DIR
 
 
+# ── una sola copia ──
+_INSTANCE_LOCK = None
+
+
+def instance_lock():
+    """Toma el candado de «Bubblepad abierto». Devuelve (handle, ya_estaba_abierto)."""
+    if sys.platform != "win32":
+        return None, False
+    import ctypes
+    k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    k32.CreateMutexW.restype = ctypes.c_void_p
+    k32.CreateMutexW.argtypes = [ctypes.c_void_p, ctypes.c_bool, ctypes.c_wchar_p]
+    h = k32.CreateMutexW(None, False, "Local\\BubblepadSingleInstance")
+    err = ctypes.get_last_error()
+    if not h or err in (183, 5):                 # ERROR_ALREADY_EXISTS / ERROR_ACCESS_DENIED (otra copia, admin)
+        release_lock(h)
+        return None, True
+    return h, False
+
+
+def release_lock(h):
+    if h and sys.platform == "win32":
+        import ctypes
+        ctypes.windll.kernel32.CloseHandle(ctypes.c_void_p(h))
+
+
+def already_open_message():
+    if sys.platform != "win32":
+        return
+    import ctypes
+    try:
+        i18n.set_lang(config.load()["ui"].get("lang") or "es")
+    except Exception:
+        pass
+    ctypes.windll.user32.MessageBoxW(None, t("already_open"), "Bubblepad", 0x40 | 0x40000)  # info, encima
+
+
 def bubble_icon(muted=False):
     """Icono de la app (burbuja aqua); en gris cuando el micro está silenciado."""
     img = QPixmap(ICON_PATH).toImage() if os.path.exists(ICON_PATH) else None
@@ -873,28 +910,38 @@ def main():
     qapp.setQuitOnLastWindowClosed(False)
     qapp.setApplicationName("Bubblepad")
 
+    # Una sola copia abierta. El candado (mutex de Windows) se ve aunque una copia sea administrador
+    # y la otra no; el aviso por QLocalSocket no siempre cruza esa barrera. Dos copias a la vez
+    # mezclarían tu voz dos veces en el CABLE (se oye con eco).
+    if "--relaunch" in sys.argv:                 # al relanzar, esperamos a que la copia anterior se cierre
+        for _ in range(40):
+            lock, busy = instance_lock()
+            if not busy:
+                break
+            release_lock(lock)
+            QThread.msleep(250)
+    else:
+        lock, busy = instance_lock()
+    if busy:
+        sock = QLocalSocket()
+        sock.connectToServer(APP_ID)
+        if sock.waitForConnected(300):           # le pedimos que muestre el panel
+            sock.write(b"show")
+            sock.flush()
+            sock.waitForBytesWritten(300)
+        else:
+            already_open_message()
+        return
+
     # "Abrir siempre como administrador": si toca y aún no lo somos, nos relanzamos elevados
     if "--relaunch" not in sys.argv and not is_admin() and config.load()["ui"].get("admin_on_start"):
+        release_lock(lock)                       # que la copia elevada pueda quedárselo
         if launch_elevated():
             return
-    # Al relanzar, esperamos a que la copia anterior termine de cerrarse
-    if "--relaunch" in sys.argv:
-        for _ in range(40):
-            probe = QLocalSocket()
-            probe.connectToServer(APP_ID)
-            if not probe.waitForConnected(100):
-                break
-            probe.abort()
-            QThread.msleep(150)
+        lock, _ = instance_lock()
+    global _INSTANCE_LOCK
+    _INSTANCE_LOCK = lock                        # mientras viva el proceso, el candado es nuestro
 
-    # Una sola copia abierta: si ya está, le pedimos que muestre el panel
-    sock = QLocalSocket()
-    sock.connectToServer(APP_ID)
-    if sock.waitForConnected(300):
-        sock.write(b"show")
-        sock.flush()
-        sock.waitForBytesWritten(300)
-        return
     QLocalServer.removeServer(APP_ID)
     server = QLocalServer()
     server.setSocketOptions(QLocalServer.WorldAccessOption)   # visible aunque una copia sea admin y otra no
