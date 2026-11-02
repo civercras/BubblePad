@@ -682,7 +682,7 @@ class BubblepadApp:
             "mic": e.mic_name, "cable": e.cable_name, "monitor": e.monitor_name,
             "vol_mic": e.vol_mic, "vol_call": e.vol_call, "vol_me": e.vol_me,
             "mic_muted": e.mic_muted,
-            "denoise": e.denoise_on, "denoise_ok": denoise_available(),
+            "denoise": e.denoise_on, "denoise_ok": denoise_available() and "denoise" not in e.errors,
             "sounds": [{"id": s, "name": os.path.splitext(s.split("/")[-1])[0], "page": page_of(s)}
                        for s in self.sounds],
             "pages": self.pages,

@@ -43,6 +43,14 @@ def list_devices():
     return ins, outs
 
 
+def _wasapi_convert():
+    """Ajustes WASAPI para que Windows convierta la frecuencia del micro (si existe la opción)."""
+    try:
+        return sd.WasapiSettings(auto_convert=True)
+    except Exception:
+        return None
+
+
 def _find(name, kind):
     """Índice del dispositivo por nombre (los índices cambian, los nombres no)."""
     api = _wasapi_index()
@@ -85,11 +93,13 @@ class Ring:
         self.buf = np.zeros(size, np.float32)
         self.size = size
         self.r = self.w = self.n = 0
+        self.primed = False
         self.lock = threading.Lock()
 
     def clear(self):
         with self.lock:
             self.r = self.w = self.n = 0
+            self.primed = False
 
     def write(self, x):
         with self.lock:
@@ -110,17 +120,26 @@ class Ring:
             self.w = e % self.size
             self.n += k
 
-    def read(self, k, keep_max):
-        """Lee k muestras; si se acumula retraso (relojes distintos), lo recorta."""
+    def read(self, k, keep_max, prefill=0):
+        """Lee k muestras con un pequeño colchón (prefill) para absorber que la voz llegue a
+        golpes (p. ej. en bloques de 10 ms de la reducción de ruido). Si se acumula demasiado
+        retraso (relojes distintos), lo recorta."""
         out = np.zeros(k, np.float32)
         with self.lock:
+            keep_max = max(keep_max, prefill + k * 2)
             if self.n > keep_max + k:
                 drop = self.n - keep_max
                 self.r = (self.r + drop) % self.size
                 self.n -= drop
-            if self.n < k:                     # aún no hay bastante: esperamos un bloque
-                return out                     # (mejor un silencio entero que voz a trozos)
-            m = k
+            if not self.primed:                # esperamos a tener colchón antes de empezar
+                if self.n < k + prefill:
+                    return out
+                self.primed = True
+            m = min(k, self.n)
+            if m < k:                          # se vació: damos lo que hay y volvemos a llenar el colchón
+                self.primed = False
+            if m == 0:
+                return out
             e = self.r + m
             if e <= self.size:
                 out[:m] = self.buf[self.r:e]
@@ -273,13 +292,28 @@ class Engine:
             if idx is None:
                 raise RuntimeError(t("no_mic", name=name))
             d = sd.query_devices(idx)
-            self._mic_rate = int(d["default_samplerate"])
-            self._make_denoiser()
             ch = min(2, d["max_input_channels"])
-            self._mic_stream = sd.InputStream(device=idx, samplerate=self._mic_rate, channels=ch,
-                                              dtype="float32", latency="low", callback=self._mic_cb)
-            self._mic_last = time.monotonic()
-            self._mic_stream.start()
+            self._mic_stream = None
+            # RNNoise trabaja a 48 kHz: pedimos el micro a 48 kHz y que Windows convierta si hace
+            # falta (mejor calidad que convertir nosotros a trozos). Si no se puede, el de siempre.
+            for rate, extra in ((48000, _wasapi_convert()), (int(d["default_samplerate"]), None)):
+                try:
+                    self._mic_rate = rate
+                    self._make_denoiser()
+                    self._mic_stream = sd.InputStream(device=idx, samplerate=rate, channels=ch, dtype="float32",
+                                                      latency="low", callback=self._mic_cb, extra_settings=extra)
+                    self._mic_last = time.monotonic()
+                    self._mic_stream.start()
+                    break
+                except Exception:
+                    if self._mic_stream is not None:
+                        try:
+                            self._mic_stream.close()
+                        except Exception:
+                            pass
+                        self._mic_stream = None
+                    if rate != 48000:
+                        raise
         except Exception as e:
             self.errors["mic"] = str(e)
 
@@ -349,8 +383,9 @@ class Engine:
         if dn is not None:
             try:
                 mono = dn.process(mono)
-            except Exception:
+            except Exception as e:
                 self._denoiser = None                     # si falla, seguimos sin limpiar antes que cortar la voz
+                self.errors["denoise"] = f"RNNoise: {e}"
         self.mic_peak = max(self.mic_peak * 0.85, float(np.abs(mono).max()) if len(mono) else 0.0)
         self._ring.write(mono.astype(np.float32, copy=False))
 
@@ -358,14 +393,15 @@ class Engine:
         """Trozo de micro listo para mezclar en el CABLE (o None si está silenciado)."""
         if self._mic_stream is None:
             return None
-        keep = int(self._mic_rate * 0.04)              # máx. 40 ms de retraso acumulado
+        keep = int(self._mic_rate * 0.06)              # máx. 60 ms de retraso acumulado
+        pre = int(self._mic_rate * 0.02)               # 20 ms de colchón contra cortes
         if out_rate == self._mic_rate:
-            x = self._ring.read(frames, keep)
+            x = self._ring.read(frames, keep, pre)
         else:                                          # distinta frecuencia: reajuste lineal
             want = frames * self._mic_rate / out_rate + self._resample_src_pos
             need = max(1, int(want))
             self._resample_src_pos = want - need
-            src = self._ring.read(need, keep)
+            src = self._ring.read(need, keep, pre)
             x = np.interp(np.linspace(0, need - 1, frames), np.arange(need), src).astype(np.float32)
         if self.mic_muted:
             return None

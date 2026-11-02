@@ -67,8 +67,8 @@ def available():
 class Denoiser:
     """Limpia un flujo mono de float32 (-1..1) a cualquier frecuencia.
 
-    Acumula bloques de 10 ms; añade como mucho ~10 ms de retraso. Si el micro no va a 48 kHz,
-    se convierte a 48 kHz y de vuelta con interpolación lineal (suficiente para voz)."""
+    Acumula bloques de 10 ms; añade como mucho ~10 ms de retraso. Normalmente el micro ya se abre
+    a 48 kHz; si no, se convierte a 48 kHz y de vuelta con interpolación lineal continua."""
 
     def __init__(self, rate):
         lib = _load()
@@ -80,6 +80,8 @@ class Denoiser:
         self.pending = np.zeros(0, np.float32)        # entrada a 48 kHz aún sin procesar
         self.buf = np.zeros(_frame, np.float32)
         self.ptr = self.buf.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+        self.to48 = self._Resampler(self.rate, RATE)
+        self.back = self._Resampler(RATE, self.rate)
 
     def close(self):
         if self.state:
@@ -92,20 +94,31 @@ class Denoiser:
         except Exception:
             pass
 
-    @staticmethod
-    def _resample(x, src, dst):
-        """Conversión lineal de un bloque (pequeños desfases entre bloques: inaudibles en voz)."""
-        if src == dst or len(x) < 2:
-            return x
-        n = max(1, int(round(len(x) * dst / src)))
-        return np.interp(np.linspace(0, len(x) - 1, n), np.arange(len(x)), x).astype(np.float32)
+    class _Resampler:
+        """Conversión lineal continua entre bloques (guarda la última muestra y el desfase)."""
+
+        def __init__(self, src, dst):
+            self.step = src / dst
+            self.pos = 0.0                         # posición de la próxima salida, relativa a self.last
+            self.last = np.zeros(1, np.float32)
+
+        def __call__(self, x):
+            if self.step == 1.0 or not len(x):
+                return x
+            xx = np.concatenate((self.last, x))    # la muestra anterior une un bloque con el siguiente
+            n_avail = len(xx) - 1
+            idx = np.arange(self.pos, n_avail, self.step)
+            y = np.interp(idx, np.arange(len(xx)), xx).astype(np.float32)
+            self.pos = (idx[-1] + self.step - n_avail) if len(idx) else self.pos - len(x)
+            self.last = xx[-1:].copy()
+            return y
 
     def process(self, mono):
         """Devuelve la voz limpia. Puede devolver algo menos (o más) que la entrada mientras se
         llena el primer bloque de 10 ms; el búfer del motor absorbe esa diferencia."""
         if not self.state:
             return mono
-        x48 = self._resample(np.asarray(mono, np.float32), self.rate, RATE)
+        x48 = self.to48(np.asarray(mono, np.float32))
         self.pending = np.concatenate((self.pending, x48)) if len(self.pending) else x48
         f = _frame
         k = len(self.pending) // f
@@ -117,4 +130,4 @@ class Denoiser:
             self.lib.rnnoise_process_frame(self.state, self.ptr, self.ptr)
             out[i * f:(i + 1) * f] = self.buf * (1.0 / 32768.0)
         self.pending = self.pending[k * f:].copy()
-        return self._resample(out, RATE, self.rate)
+        return self.back(out)
