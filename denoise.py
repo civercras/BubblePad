@@ -118,8 +118,10 @@ class Denoiser:
         llena el primer bloque de 10 ms; el búfer del motor absorbe esa diferencia."""
         if not self.state:
             return mono
-        x48 = self.to48(np.asarray(mono, np.float32))
-        self.pending = np.concatenate((self.pending, x48)) if len(self.pending) else x48
+        # copia SIEMPRE: el bloque del micro es memoria que Windows reutiliza en la siguiente
+        # llamada; si guardáramos una referencia, ese trozo cambiaría solo (voz repetida = eco)
+        x48 = self.to48(np.array(mono, np.float32, copy=True))
+        self.pending = np.concatenate((self.pending, x48)) if len(self.pending) else x48.copy()
         f = _frame
         k = len(self.pending) // f
         if k == 0:

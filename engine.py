@@ -254,6 +254,7 @@ class Engine:
         self.sound_gain = {}    # volumen por sonido (más adelante)
         self.trims = {}         # sid -> (inicio_s, fin_s); el archivo original no se toca
         self.mic_peak = 0.0
+        self.mic_block = 0      # muestras por llamada del micro (para el registro de diagnóstico)
         self.errors = {}
 
         self._mic_stream = None
@@ -326,6 +327,13 @@ class Engine:
             except Exception as e:
                 self.errors["denoise"] = str(e)
 
+    def mic_info(self):
+        """Resumen para el registro: frecuencia, tamaño de bloque y si la reducción de ruido actúa."""
+        if self._mic_stream is None:
+            return ""
+        dn = "sí" if self._denoiser is not None else ("no (" + self.errors.get("denoise", "desactivada") + ")")
+        return f"micro {self.mic_name} · {self._mic_rate} Hz · bloques de {self.mic_block} · reducción de ruido: {dn}"
+
     def set_denoise(self, on):
         self.denoise_on = bool(on)
         self.errors.pop("denoise", None)
@@ -376,8 +384,9 @@ class Engine:
         self.monitor.close()
 
     # ── micrófono ──
-    def _mic_cb(self, indata, _frames, _t, _status):
+    def _mic_cb(self, indata, frames, _t, _status):
         self._mic_last = time.monotonic()
+        self.mic_block = frames
         mono = indata.mean(axis=1) if indata.shape[1] > 1 else indata[:, 0]
         dn = self._denoiser
         if dn is not None:

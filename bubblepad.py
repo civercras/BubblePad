@@ -559,6 +559,10 @@ class BubblepadApp:
             log_error(f"Dispositivos: {e}")
 
     def _watch(self):
+        info = self.engine.mic_info()                   # se apunta en bubblepad.log cada vez que cambia
+        if info and self.engine.mic_block and info != getattr(self, "_mic_info", ""):
+            self._mic_info = info
+            log_error(info)
         if self.engine.healthy():
             self._fails = 0
             return
