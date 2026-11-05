@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url><loc>https://civercras.github.io/BubblePad/</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://civercras.github.io/BubblePad/es/"/><xhtml:link rel="alternate" hreflang="en" href="https://civercras.github.io/BubblePad/"/></url>
+  <url><loc>https://civercras.github.io/BubblePad/es/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://civercras.github.io/BubblePad/"/><xhtml:link rel="alternate" hreflang="es" href="https://civercras.github.io/BubblePad/es/"/></url>
+</urlset>
