@@ -4,6 +4,10 @@
 - **`Bubblepad-Setup.exe` (recommended):** installer. Installs Bubblepad for your user, no admin rights needed, with a Start menu shortcut and an uninstaller.
 - **`Bubblepad-windows.zip`:** portable version. Unzip it anywhere and run `Bubblepad.exe`; nothing gets installed.
 
+### What's new in v0.5.1
+- **Refresh devices from the connections panel** (button next to ×), handy when you plug in a headset.
+- Closing the connections panel now takes you straight back to your sounds.
+
 ### What's new in v0.5.0
 - **New connections panel (Chrome look):** your mic, Bubblepad, the call and your headphones as real hardware plates with screws, tape labels and blue LCDs to pick each device. Volume knobs you can drag, scroll or double-click to reset, a toggle switch with an LED for noise reduction, and colour-coded patch cables that glow when there's signal (red = your voice, green = the call mix, yellow = sounds for you).
 - **Clearer voice:** fixed a bug that could repeat tiny bits of your voice (robotic or echoey sound) on mics that deliver audio in small blocks. The mic now opens at 48 kHz so noise reduction works without extra conversion.
@@ -36,6 +40,8 @@
 
 ---
 **Español:** descarga **Bubblepad-Setup.exe** (instalador, recomendado) o el **.zip** portable. Para actualizar, ejecuta el instalador encima: cierra Bubblepad y conserva tus sonidos y ajustes.
+
+Novedades de la v0.5.1: botón para actualizar dispositivos en el panel de conexiones, y al cerrarlo vuelves directamente a tus sonidos.
 
 Novedades de la v0.5.0:
 - **Nuevo panel de conexiones** con placas metálicas, ruedas de volumen y cables de verdad.
